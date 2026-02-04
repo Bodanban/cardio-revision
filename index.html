@@ -1517,6 +1517,652 @@
             }
             return a;
         }
+
+        // =====================================================
+        // ANATOMIE - SCHÉMAS INTERACTIFS
+        // =====================================================
+        const anatomyData = {
+            heart: {
+                title: "Anatomie du cœur",
+                structures: [
+                    { id: "od", name: "Oreillette droite", color: "#6495ED", description: "Reçoit le sang désoxygéné des veines caves supérieure et inférieure.", details: ["Volume: 25-30 mL", "Paroi fine (2mm)", "Contient le nœud sinusal"] },
+                    { id: "og", name: "Oreillette gauche", color: "#DC143C", description: "Reçoit le sang oxygéné des 4 veines pulmonaires.", details: ["Volume: 25-30 mL", "Paroi fine (3mm)", "Appendice auriculaire (site de thrombus dans FA)"] },
+                    { id: "vd", name: "Ventricule droit", color: "#4169E1", description: "Éjecte le sang vers les poumons via l'artère pulmonaire.", details: ["Volume: 85-90 mL", "Paroi: 3-5 mm", "Pression systolique: 25 mmHg"] },
+                    { id: "vg", name: "Ventricule gauche", color: "#B22222", description: "Éjecte le sang vers l'aorte pour la circulation systémique.", details: ["Volume: 85-90 mL", "Paroi: 8-12 mm", "Pression systolique: 120 mmHg"] },
+                    { id: "mitrale", name: "Valve mitrale", color: "#FFD700", description: "Valve AV gauche, bicuspide, entre OG et VG.", details: ["2 feuillets", "Cordages + piliers", "Surface normale: 4-6 cm²"] },
+                    { id: "tricuspide", name: "Valve tricuspide", color: "#FFA500", description: "Valve AV droite, entre OD et VD.", details: ["3 feuillets", "Cordages + piliers", "Surface normale: 7-9 cm²"] },
+                    { id: "aortique", name: "Valve aortique", color: "#FF6347", description: "Valve sigmoïde entre VG et aorte.", details: ["3 sigmoïdes", "Sinus de Valsalva", "Surface normale: 3-4 cm²"] },
+                    { id: "pulmonaire", name: "Valve pulmonaire", color: "#87CEEB", description: "Valve sigmoïde entre VD et artère pulmonaire.", details: ["3 sigmoïdes", "Moins souvent pathologique", "Surface normale: 2 cm²"] }
+                ]
+            },
+            coronary: {
+                title: "Circulation coronaire",
+                structures: [
+                    { id: "tcc", name: "Tronc commun coronaire gauche", color: "#FF0000", description: "Naît du sinus de Valsalva gauche, se divise en IVA et Cx.", details: ["Longueur: 1-2 cm", "Sténose critique si >50%", "Atteinte = haut risque"] },
+                    { id: "iva", name: "Artère IVA", color: "#FF4500", description: "Vascularise la paroi antérieure et le septum du VG.", details: ["Territoire antérieur", "Donne les septales et diagonales", "IDM antérieur si occlusion"] },
+                    { id: "cx", name: "Artère circonflexe", color: "#FF6347", description: "Vascularise la paroi latérale du VG.", details: ["Territoire latéral", "Donne les marginales", "IDM latéral si occlusion"] },
+                    { id: "cd", name: "Coronaire droite", color: "#DC143C", description: "Vascularise le VD et la paroi inférieure du VG.", details: ["Territoire inférieur", "Dominance droite 85%", "Donne l'IVP dans 85%"] },
+                    { id: "ivp", name: "Artère IVP", color: "#CD5C5C", description: "Interventriculaire postérieure, vascularise le septum postérieur.", details: ["Naît de la CD (85%)", "Ou de la Cx (15%)", "Définit la dominance"] }
+                ]
+            },
+            conduction: {
+                title: "Système de conduction",
+                structures: [
+                    { id: "ns", name: "Nœud sinusal", color: "#FFD700", description: "Pacemaker physiologique du cœur, situé à la jonction VCS-OD.", details: ["Fréquence intrinsèque: 60-100/min", "Automatisme le plus rapide", "Innervation sympathique/parasympathique"] },
+                    { id: "nav", name: "Nœud AV", color: "#FFA500", description: "Ralentit la conduction pour permettre le remplissage ventriculaire.", details: ["Situé dans le triangle de Koch", "Fréquence intrinsèque: 40-60/min", "Seule connexion électrique OV"] },
+                    { id: "his", name: "Faisceau de His", color: "#32CD32", description: "Traverse le septum membraneux, se divise en branches.", details: ["Seul passage électrique du squelette fibreux", "Court: 1-2 cm", "Très vulnérable"] },
+                    { id: "bd", name: "Branche droite", color: "#4169E1", description: "Conduit l'influx au VD.", details: ["Long et fin", "Bloc de branche droite fréquent", "QRS: rsR' en V1"] },
+                    { id: "bg", name: "Branche gauche", color: "#DC143C", description: "Se divise en hémibranche antérieure et postérieure.", details: ["Court et épais", "2 hémibranches", "BBG = QRS large, onde R en V5-V6"] },
+                    { id: "purkinje", name: "Réseau de Purkinje", color: "#9370DB", description: "Distribue l'influx à l'ensemble du myocarde ventriculaire.", details: ["Conduction très rapide", "Synchronise la contraction", "Fréquence intrinsèque: 20-40/min"] }
+                ]
+            },
+            cycle: {
+                title: "Cycle cardiaque",
+                structures: [
+                    { id: "systole_a", name: "Systole auriculaire", color: "#FFD700", description: "Contraction des oreillettes, contribue à 20% du remplissage.", details: ["Durée: ~100 ms", "Onde P sur ECG", "Perte en FA = 'kick' auriculaire perdu"] },
+                    { id: "civ", name: "Contraction isovolumétrique", color: "#FF6347", description: "Début de systole, valves AV fermées, pression augmente.", details: ["Durée: ~50 ms", "Toutes valves fermées", "B1 = fermeture mitrale/tricuspide"] },
+                    { id: "ejection", name: "Éjection ventriculaire", color: "#DC143C", description: "Ouverture des valves sigmoïdes, éjection du sang.", details: ["Durée: ~200 ms", "VES = 70 mL", "FEVG = VES/VTD = 55-70%"] },
+                    { id: "riv", name: "Relaxation isovolumétrique", color: "#4169E1", description: "Début de diastole, toutes valves fermées.", details: ["Durée: ~80 ms", "B2 = fermeture aortique/pulmonaire", "Pression ventriculaire chute"] },
+                    { id: "remplissage", name: "Remplissage ventriculaire", color: "#6495ED", description: "80% du remplissage est passif, puis systole auriculaire.", details: ["Remplissage rapide puis lent", "Dépend de la compliance", "Onde E et A en écho"] }
+                ]
+            }
+        };
+
+        let currentAnatomyView = 'heart';
+        let selectedStructure = null;
+
+        function showAnatomyView(view) {
+            currentAnatomyView = view;
+            selectedStructure = null;
+            document.querySelectorAll('.anatomy-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderAnatomySVG();
+            renderAnatomyLegend();
+            document.getElementById('anatomy-title').textContent = '🫀 ' + anatomyData[view].title;
+            document.getElementById('anatomy-description').textContent = 'Cliquez sur les différentes parties du schéma pour en apprendre plus.';
+            document.getElementById('anatomy-details').innerHTML = '';
+        }
+
+        function renderAnatomySVG() {
+            const svg = document.getElementById('anatomy-svg');
+            const data = anatomyData[currentAnatomyView];
+            let html = '';
+
+            if (currentAnatomyView === 'heart') {
+                html = `
+                    <rect x="0" y="0" width="400" height="400" fill="var(--card-bg-alt)"/>
+                    <!-- Cœur stylisé -->
+                    <ellipse cx="150" cy="120" rx="70" ry="50" fill="${data.structures[0].color}" class="clickable" onclick="selectAnatomyStructure('od')" opacity="0.8"/>
+                    <ellipse cx="250" cy="120" rx="70" ry="50" fill="${data.structures[1].color}" class="clickable" onclick="selectAnatomyStructure('og')" opacity="0.8"/>
+                    <path d="M80 170 Q80 320 200 380 Q320 320 320 170 L320 170 Q280 150 200 160 Q120 150 80 170 Z" fill="${data.structures[2].color}" class="clickable" onclick="selectAnatomyStructure('vd')" opacity="0.8"/>
+                    <path d="M140 170 Q160 320 200 360 Q240 320 260 170 L260 170 Q220 160 200 165 Q180 160 140 170 Z" fill="${data.structures[3].color}" class="clickable" onclick="selectAnatomyStructure('vg')" opacity="0.8"/>
+                    <!-- Valves -->
+                    <ellipse cx="200" cy="165" rx="25" ry="8" fill="${data.structures[4].color}" class="clickable" onclick="selectAnatomyStructure('mitrale')" stroke="#333" stroke-width="2"/>
+                    <ellipse cx="130" cy="165" rx="20" ry="8" fill="${data.structures[5].color}" class="clickable" onclick="selectAnatomyStructure('tricuspide')" stroke="#333" stroke-width="2"/>
+                    <ellipse cx="230" cy="90" rx="15" ry="8" fill="${data.structures[6].color}" class="clickable" onclick="selectAnatomyStructure('aortique')" stroke="#333" stroke-width="2"/>
+                    <ellipse cx="130" cy="80" rx="15" ry="8" fill="${data.structures[7].color}" class="clickable" onclick="selectAnatomyStructure('pulmonaire')" stroke="#333" stroke-width="2"/>
+                    <!-- Labels -->
+                    <text x="150" y="125" text-anchor="middle" fill="white" font-size="12" font-weight="bold">OD</text>
+                    <text x="250" y="125" text-anchor="middle" fill="white" font-size="12" font-weight="bold">OG</text>
+                    <text x="110" y="260" text-anchor="middle" fill="white" font-size="12" font-weight="bold">VD</text>
+                    <text x="200" y="280" text-anchor="middle" fill="white" font-size="12" font-weight="bold">VG</text>
+                `;
+            } else if (currentAnatomyView === 'coronary') {
+                html = `
+                    <rect x="0" y="0" width="400" height="400" fill="var(--card-bg-alt)"/>
+                    <!-- Cœur simplifié -->
+                    <path d="M100 150 Q100 350 200 390 Q300 350 300 150 Q250 120 200 130 Q150 120 100 150 Z" fill="#FFCCCC" stroke="#CC9999" stroke-width="2"/>
+                    <!-- Aorte -->
+                    <path d="M200 80 Q200 50 230 50 Q280 50 280 100 Q280 130 260 150" fill="none" stroke="#CC0000" stroke-width="8"/>
+                    <!-- Tronc commun -->
+                    <line x1="210" y1="100" x2="180" y2="130" stroke="${data.structures[0].color}" stroke-width="6" class="clickable" onclick="selectAnatomyStructure('tcc')"/>
+                    <!-- IVA -->
+                    <path d="M180 130 Q160 200 170 300 Q175 340 180 360" fill="none" stroke="${data.structures[1].color}" stroke-width="5" class="clickable" onclick="selectAnatomyStructure('iva')"/>
+                    <!-- Cx -->
+                    <path d="M180 130 Q120 160 110 220 Q105 260 115 300" fill="none" stroke="${data.structures[2].color}" stroke-width="5" class="clickable" onclick="selectAnatomyStructure('cx')"/>
+                    <!-- CD -->
+                    <path d="M230 100 Q290 130 300 200 Q305 280 280 340" fill="none" stroke="${data.structures[3].color}" stroke-width="5" class="clickable" onclick="selectAnatomyStructure('cd')"/>
+                    <!-- IVP -->
+                    <path d="M280 340 Q240 360 200 370" fill="none" stroke="${data.structures[4].color}" stroke-width="4" class="clickable" onclick="selectAnatomyStructure('ivp')"/>
+                    <!-- Labels -->
+                    <text x="175" y="115" fill="${data.structures[0].color}" font-size="11" font-weight="bold">TCG</text>
+                    <text x="140" y="220" fill="${data.structures[1].color}" font-size="11" font-weight="bold">IVA</text>
+                    <text x="90" y="200" fill="${data.structures[2].color}" font-size="11" font-weight="bold">Cx</text>
+                    <text x="305" y="220" fill="${data.structures[3].color}" font-size="11" font-weight="bold">CD</text>
+                    <text x="230" y="375" fill="${data.structures[4].color}" font-size="11" font-weight="bold">IVP</text>
+                `;
+            } else if (currentAnatomyView === 'conduction') {
+                html = `
+                    <rect x="0" y="0" width="400" height="400" fill="var(--card-bg-alt)"/>
+                    <!-- Cœur simplifié -->
+                    <ellipse cx="200" cy="100" rx="120" ry="60" fill="#FFDDDD" stroke="#CC9999" stroke-width="2"/>
+                    <path d="M80 140 Q80 340 200 390 Q320 340 320 140 L320 140 Q260 120 200 130 Q140 120 80 140 Z" fill="#FFCCCC" stroke="#CC9999" stroke-width="2"/>
+                    <!-- Nœud sinusal -->
+                    <circle cx="280" cy="70" r="15" fill="${data.structures[0].color}" class="clickable" onclick="selectAnatomyStructure('ns')"/>
+                    <!-- Faisceau internodal -->
+                    <path d="M280 85 Q250 100 200 140" fill="none" stroke="#FFD700" stroke-width="3" stroke-dasharray="5,3"/>
+                    <!-- Nœud AV -->
+                    <circle cx="200" cy="150" r="12" fill="${data.structures[1].color}" class="clickable" onclick="selectAnatomyStructure('nav')"/>
+                    <!-- His -->
+                    <line x1="200" y1="162" x2="200" y2="200" stroke="${data.structures[2].color}" stroke-width="5" class="clickable" onclick="selectAnatomyStructure('his')"/>
+                    <!-- Branche droite -->
+                    <path d="M200 200 Q160 220 140 300 Q130 350 140 380" fill="none" stroke="${data.structures[3].color}" stroke-width="4" class="clickable" onclick="selectAnatomyStructure('bd')"/>
+                    <!-- Branche gauche -->
+                    <path d="M200 200 Q240 220 260 300 Q270 350 260 380" fill="none" stroke="${data.structures[4].color}" stroke-width="4" class="clickable" onclick="selectAnatomyStructure('bg')"/>
+                    <!-- Purkinje -->
+                    <path d="M140 350 Q120 370 100 380 M140 350 Q150 380 160 390 M260 350 Q280 370 300 380 M260 350 Q250 380 240 390" fill="none" stroke="${data.structures[5].color}" stroke-width="2" class="clickable" onclick="selectAnatomyStructure('purkinje')"/>
+                    <!-- Labels -->
+                    <text x="280" y="50" text-anchor="middle" fill="${data.structures[0].color}" font-size="10" font-weight="bold">NS</text>
+                    <text x="220" y="145" fill="${data.structures[1].color}" font-size="10" font-weight="bold">NAV</text>
+                    <text x="215" y="190" fill="${data.structures[2].color}" font-size="10" font-weight="bold">His</text>
+                    <text x="115" y="290" fill="${data.structures[3].color}" font-size="10" font-weight="bold">BD</text>
+                    <text x="275" y="290" fill="${data.structures[4].color}" font-size="10" font-weight="bold">BG</text>
+                `;
+            } else if (currentAnatomyView === 'cycle') {
+                html = `
+                    <rect x="0" y="0" width="400" height="400" fill="var(--card-bg-alt)"/>
+                    <!-- Diagramme circulaire du cycle -->
+                    <circle cx="200" cy="200" r="150" fill="none" stroke="var(--border-color)" stroke-width="2"/>
+                    <!-- Phases -->
+                    <path d="M200 200 L200 50 A150 150 0 0 1 329 125 Z" fill="${data.structures[0].color}" class="clickable" onclick="selectAnatomyStructure('systole_a')" opacity="0.8"/>
+                    <path d="M200 200 L329 125 A150 150 0 0 1 350 200 Z" fill="${data.structures[1].color}" class="clickable" onclick="selectAnatomyStructure('civ')" opacity="0.8"/>
+                    <path d="M200 200 L350 200 A150 150 0 0 1 270 330 Z" fill="${data.structures[2].color}" class="clickable" onclick="selectAnatomyStructure('ejection')" opacity="0.8"/>
+                    <path d="M200 200 L270 330 A150 150 0 0 1 130 330 Z" fill="${data.structures[3].color}" class="clickable" onclick="selectAnatomyStructure('riv')" opacity="0.8"/>
+                    <path d="M200 200 L130 330 A150 150 0 0 1 200 50 Z" fill="${data.structures[4].color}" class="clickable" onclick="selectAnatomyStructure('remplissage')" opacity="0.8"/>
+                    <!-- Labels -->
+                    <text x="250" y="100" fill="white" font-size="10" font-weight="bold">Systole</text>
+                    <text x="250" y="115" fill="white" font-size="10">auriculaire</text>
+                    <text x="310" y="170" fill="white" font-size="9" font-weight="bold">CIV</text>
+                    <text x="290" y="260" fill="white" font-size="10" font-weight="bold">Éjection</text>
+                    <text x="155" y="310" fill="white" font-size="9" font-weight="bold">RIV</text>
+                    <text x="100" y="180" fill="white" font-size="10" font-weight="bold">Remplissage</text>
+                    <!-- Centre -->
+                    <circle cx="200" cy="200" r="40" fill="var(--card-bg)"/>
+                    <text x="200" y="195" text-anchor="middle" fill="var(--text-primary)" font-size="11" font-weight="bold">Cycle</text>
+                    <text x="200" y="210" text-anchor="middle" fill="var(--text-primary)" font-size="11" font-weight="bold">cardiaque</text>
+                `;
+            }
+            svg.innerHTML = html;
+        }
+
+        function renderAnatomyLegend() {
+            const data = anatomyData[currentAnatomyView];
+            const legendEl = document.getElementById('anatomy-legend');
+            legendEl.innerHTML = `
+                <h4>📍 Légende</h4>
+                ${data.structures.map(s => `
+                    <div class="legend-item" onclick="selectAnatomyStructure('${s.id}')">
+                        <div class="legend-color" style="background: ${s.color}"></div>
+                        <span style="color: var(--text-primary)">${s.name}</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function selectAnatomyStructure(id) {
+            const data = anatomyData[currentAnatomyView];
+            const structure = data.structures.find(s => s.id === id);
+            if (!structure) return;
+
+            selectedStructure = id;
+            document.getElementById('anatomy-title').innerHTML = `<span style="color:${structure.color}">●</span> ${structure.name}`;
+            document.getElementById('anatomy-description').textContent = structure.description;
+            document.getElementById('anatomy-details').innerHTML = `
+                <ul style="margin-top: 15px;">
+                    ${structure.details.map(d => `<li>${d}</li>`).join('')}
+                </ul>
+            `;
+
+            // Highlight in SVG
+            document.querySelectorAll('.anatomy-svg .clickable').forEach(el => el.classList.remove('highlighted'));
+        }
+
+        // =====================================================
+        // ALGORITHMES DÉCISIONNELS
+        // =====================================================
+        const algorithmsData = {
+            sca: {
+                title: "Syndrome Coronarien Aigu",
+                steps: [
+                    { type: "start", text: "Douleur thoracique suspecte", detail: "Douleur rétrosternale constrictive, irradiant au bras gauche/mâchoire, trinitro-résistante" },
+                    { type: "action", text: "ECG 12 dérivations < 10 min", detail: "Rechercher sus-décalage ST, sous-décalage, ondes T négatives" },
+                    { type: "question", text: "Sus-décalage ST persistant ?", detail: "Sus-ST ≥ 1mm dans 2 dérivations contiguës (≥2mm en V1-V3)" },
+                    { type: "branch", branches: [
+                        { label: "OUI → STEMI", steps: [
+                            { type: "danger", text: "Reperfusion en URGENCE", detail: "Objectif: 1er contact médical → reperfusion < 120 min" },
+                            { type: "action", text: "Angioplastie primaire si < 120 min", detail: "Transfert direct en salle de coro, pas de fibrinolyse si délai respecté" },
+                            { type: "action", text: "Sinon fibrinolyse si < 12h", detail: "Si délai angioplastie > 120 min et pas de CI" }
+                        ]},
+                        { label: "NON → NSTEMI/Angor instable", steps: [
+                            { type: "action", text: "Troponine + score GRACE", detail: "Stratification du risque: très haut, haut, intermédiaire, bas" },
+                            { type: "action", text: "Coro selon risque", detail: "< 2h si très haut risque, < 24h si haut risque, < 72h si intermédiaire" }
+                        ]}
+                    ]},
+                    { type: "end", text: "Traitement BASIC au long cours", detail: "Bêtabloquant, Antiagrégant (bithérapie 12 mois), Statine haute dose, IEC, Contrôle FDR" }
+                ]
+            },
+            ic: {
+                title: "Insuffisance Cardiaque",
+                steps: [
+                    { type: "start", text: "Symptômes évocateurs d'IC", detail: "Dyspnée, orthopnée, OMI, fatigue, toux nocturne" },
+                    { type: "action", text: "BNP/NT-proBNP", detail: "BNP > 100 pg/mL ou NT-proBNP > 300 pg/mL → IC probable" },
+                    { type: "action", text: "Échocardiographie", detail: "Évaluer FEVG, dimensions cavités, valves, pressions de remplissage" },
+                    { type: "question", text: "FEVG ≤ 40% ?", detail: "Seuil définissant l'ICFEr (IC à fraction d'éjection réduite)" },
+                    { type: "branch", branches: [
+                        { label: "OUI → ICFEr", steps: [
+                            { type: "action", text: "4 PILIERS obligatoires", detail: "IEC/ARNI + Bêtabloquant + ARM + iSGLT2 = amélioration survie" },
+                            { type: "action", text: "Diurétiques si congestion", detail: "Furosémide pour soulager les symptômes, pas d'effet sur mortalité" },
+                            { type: "question", text: "FEVG ≤ 35% malgré 3 mois ttt ?", detail: "Réévaluation après optimisation thérapeutique" },
+                            { type: "action", text: "Discuter DAI ± CRT", detail: "DAI si FEVG ≤35%, CRT si QRS ≥150ms + BBG" }
+                        ]},
+                        { label: "NON → ICFEp", steps: [
+                            { type: "action", text: "Traitement symptomatique", detail: "Diurétiques, contrôle FC et TA, traitement des comorbidités" },
+                            { type: "action", text: "iSGLT2 recommandés", detail: "Bénéfice démontré dans ICFEp (EMPEROR-Preserved, DELIVER)" }
+                        ]}
+                    ]},
+                    { type: "end", text: "Suivi régulier + éducation", detail: "Surveillance poids, régime pauvre en sel, activité physique adaptée" }
+                ]
+            },
+            fa: {
+                title: "Fibrillation Auriculaire",
+                steps: [
+                    { type: "start", text: "FA documentée", detail: "ECG: absence d'ondes P, trémulation, RR irréguliers" },
+                    { type: "action", text: "Évaluer la tolérance", detail: "Hémodynamique stable ? Symptômes sévères ?" },
+                    { type: "question", text: "Instabilité hémodynamique ?", detail: "Hypotension, OAP, angor, altération conscience" },
+                    { type: "branch", branches: [
+                        { label: "OUI → Urgence", steps: [
+                            { type: "danger", text: "CEE en urgence", detail: "Choc électrique externe synchronisé 150-200J biphasique" }
+                        ]},
+                        { label: "NON → Stable", steps: [
+                            { type: "action", text: "Contrôle FC < 110/min", detail: "Bêtabloquant ou diltiazem/vérapamil, digoxine si IC" },
+                            { type: "action", text: "Score CHA₂DS₂-VASc", detail: "C=IC, H=HTA, A₂=âge≥75 (2pts), D=diabète, S₂=AVC (2pts), V=vasc, A=âge 65-74, Sc=sexe féminin" },
+                            { type: "question", text: "CHA₂DS₂-VASc ≥ 1 (H) ou ≥ 2 (F) ?", detail: "Seuil d'anticoagulation (hors sexe féminin isolé)" },
+                            { type: "action", text: "Anticoagulation AOD ou AVK", detail: "AOD 1ère intention sauf valve mécanique/RM. AVK si CI AOD" }
+                        ]}
+                    ]},
+                    { type: "end", text: "Discuter stratégie rythme/fréquence", detail: "Cardioversion ± ablation si FA symptomatique malgré ttt" }
+                ]
+            },
+            acr: {
+                title: "Arrêt Cardio-Respiratoire",
+                steps: [
+                    { type: "start", text: "Patient inconscient, ne respire pas", detail: "Vérifier la sécurité, stimuler, appeler à l'aide" },
+                    { type: "danger", text: "Appeler le 15/SAMU + DAE", detail: "Alerter immédiatement, demander un défibrillateur" },
+                    { type: "action", text: "RCP 30:2 immédiate", detail: "Compressions thoraciques 100-120/min, profondeur 5-6cm" },
+                    { type: "question", text: "Rythme choquable ?", detail: "FV ou TV sans pouls = choquable. Asystolie/AESP = non choquable" },
+                    { type: "branch", branches: [
+                        { label: "FV/TV sans pouls", steps: [
+                            { type: "danger", text: "CEE 150-200J biphasique", detail: "Choc immédiat puis reprendre RCP 2 min" },
+                            { type: "action", text: "Adrénaline 1mg après 3ème choc", detail: "Puis toutes les 3-5 min" },
+                            { type: "action", text: "Amiodarone 300mg après 3ème choc", detail: "Puis 150mg si FV/TV réfractaire" }
+                        ]},
+                        { label: "Asystolie/AESP", steps: [
+                            { type: "action", text: "Adrénaline 1mg immédiat", detail: "Puis toutes les 3-5 min" },
+                            { type: "action", text: "Chercher causes réversibles", detail: "4H: Hypoxie, Hypovolémie, Hypo/Hyperkaliémie, Hypothermie" },
+                            { type: "action", text: "4T", detail: "Thrombose (coro/pulm), Tamponnade, Toxiques, pneumoThorax" }
+                        ]}
+                    ]},
+                    { type: "end", text: "RACS ou arrêt efforts", detail: "Soins post-ACR si RACS. Discussion collégiale si échec prolongé" }
+                ]
+            }
+        };
+
+        let currentAlgorithm = 'sca';
+
+        function showAlgorithm(algo) {
+            currentAlgorithm = algo;
+            document.querySelectorAll('.algo-card').forEach(c => c.classList.remove('active'));
+            event.target.closest('.algo-card').classList.add('active');
+            renderAlgorithm();
+        }
+
+        function renderAlgorithm() {
+            const algo = algorithmsData[currentAlgorithm];
+            const container = document.getElementById('algo-flowchart');
+            let html = `<h3 style="color: var(--text-primary); margin-bottom: 20px; text-align: center;">${algo.title}</h3>`;
+
+            algo.steps.forEach((step, idx) => {
+                if (step.type === 'branch') {
+                    html += `<div class="algo-branches">`;
+                    step.branches.forEach(branch => {
+                        html += `<div class="algo-branch">
+                            <div class="algo-branch-label">${branch.label}</div>`;
+                        branch.steps.forEach(s => {
+                            html += renderAlgoStep(s);
+                        });
+                        html += `</div>`;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += renderAlgoStep(step);
+                    if (idx < algo.steps.length - 1 && algo.steps[idx + 1].type !== 'branch') {
+                        html += `<div class="algo-arrow">↓</div>`;
+                    }
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderAlgoStep(step) {
+            const escapedDetail = step.detail.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            return `
+                <div class="algo-step">
+                    <div class="algo-box ${step.type}" onclick="showAlgoDetail('${step.text.replace(/'/g, "\\'")}', '${escapedDetail}')">
+                        ${step.text}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showAlgoDetail(title, content) {
+            const detailEl = document.getElementById('algo-detail');
+            document.getElementById('algo-detail-title').textContent = title;
+            document.getElementById('algo-detail-content').innerHTML = `<p>${content}</p>`;
+            detailEl.classList.add('show');
+        }
+
+        // =====================================================
+        // CAS CLINIQUES
+        // =====================================================
+        const clinicalCases = [
+            {
+                id: 1,
+                title: "SCA ST+ antérieur",
+                description: "Homme 55 ans, douleur thoracique brutale",
+                difficulty: "medium",
+                scenario: "M. Martin, 55 ans, tabagique actif, arrive aux urgences pour une douleur thoracique rétrosternale constrictive depuis 2h, irradiant au bras gauche, avec sueurs et nausées. TA 90/60, FC 100/min.",
+                steps: [
+                    {
+                        question: "Quel est le premier examen à réaliser en urgence ?",
+                        options: ["Radiographie thoracique", "ECG 12 dérivations", "Dosage troponine", "Échocardiographie"],
+                        correct: 1,
+                        explanation: "L'ECG doit être réalisé dans les 10 minutes suivant le premier contact médical. Il permet de distinguer STEMI et NSTEMI."
+                    },
+                    {
+                        question: "L'ECG montre un sus-décalage ST en V1-V4. Quel est le diagnostic ?",
+                        options: ["NSTEMI inférieur", "STEMI antérieur", "Péricardite aiguë", "Embolie pulmonaire"],
+                        correct: 1,
+                        explanation: "Sus-ST en V1-V4 = territoire antérieur = occlusion de l'IVA. C'est un STEMI nécessitant une reperfusion urgente."
+                    },
+                    {
+                        question: "Quel est l'objectif de délai pour la reperfusion ?",
+                        options: ["< 30 minutes", "< 90 minutes porte-ballon", "< 6 heures", "< 24 heures"],
+                        correct: 1,
+                        explanation: "L'objectif est une reperfusion < 120 min du 1er contact médical, idéalement < 90 min porte-ballon pour l'angioplastie primaire."
+                    },
+                    {
+                        question: "Quel traitement au long cours après la phase aiguë ?",
+                        options: ["Aspirine seule", "Statine + régime", "BASIC complet", "Bêtabloquant seul"],
+                        correct: 2,
+                        explanation: "BASIC = Bêtabloquant + Antiagrégant (bithérapie 12 mois) + Statine haute dose + IEC + Contrôle des FDR cardiovasculaires."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "Insuffisance cardiaque aiguë",
+                description: "Femme 72 ans, dyspnée aiguë nocturne",
+                difficulty: "medium",
+                scenario: "Mme Dupont, 72 ans, hypertendue, diabétique, se présente à 3h du matin pour dyspnée aiguë de décubitus avec orthopnée. Elle a des crépitants bilatéraux jusqu'aux mi-champs. TA 180/100, FC 110/min, SaO2 88%.",
+                steps: [
+                    {
+                        question: "Quel est le diagnostic le plus probable ?",
+                        options: ["Pneumonie bilatérale", "OAP (œdème aigu pulmonaire)", "Embolie pulmonaire", "Crise d'asthme"],
+                        correct: 1,
+                        explanation: "Dyspnée nocturne + orthopnée + crépitants bilatéraux + HTA = tableau typique d'OAP sur poussée hypertensive chez une patiente à risque."
+                    },
+                    {
+                        question: "Quelle est la première mesure thérapeutique ?",
+                        options: ["Intubation immédiate", "Position assise + O2 + diurétiques IV", "Remplissage vasculaire", "Antibiotiques IV"],
+                        correct: 1,
+                        explanation: "Position assise (diminue le retour veineux), O2 pour corriger l'hypoxie, et furosémide IV pour réduire la surcharge."
+                    },
+                    {
+                        question: "L'échocardiographie montre une FEVG à 35%. Après stabilisation, quel traitement de fond ?",
+                        options: ["Furosémide seul", "4 piliers: IEC/ARNI + BB + ARM + iSGLT2", "Digoxine + diurétiques", "Inhibiteurs calciques"],
+                        correct: 1,
+                        explanation: "ICFEr (FEVG ≤40%) : les 4 piliers améliorent la survie. Les diurétiques sont uniquement symptomatiques."
+                    },
+                    {
+                        question: "À 3 mois, FEVG stable à 32% malgré traitement optimal. Quelle discussion ?",
+                        options: ["Arrêt du traitement", "DAI prophylactique", "Transplantation immédiate", "Rien de plus"],
+                        correct: 1,
+                        explanation: "FEVG ≤35% malgré 3 mois de traitement médical optimal = indication au DAI en prévention primaire de la mort subite."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "FA et anticoagulation",
+                description: "Homme 68 ans, palpitations",
+                difficulty: "easy",
+                scenario: "M. Bernard, 68 ans, hypertendu sous traitement, consulte pour palpitations intermittentes depuis 1 mois. L'ECG montre une FA à 95/min. Pas d'insuffisance cardiaque. Bilan par ailleurs normal.",
+                steps: [
+                    {
+                        question: "Calculez le score CHA₂DS₂-VASc de ce patient.",
+                        options: ["0", "1", "2", "3"],
+                        correct: 2,
+                        explanation: "HTA = 1 point + Âge 65-74 = 1 point. Total = 2. Le sexe masculin ne compte pas comme facteur protecteur (pas de point)."
+                    },
+                    {
+                        question: "Faut-il anticoaguler ce patient ?",
+                        options: ["Non, score trop bas", "Oui, AOD ou AVK recommandé", "Aspirine suffisante", "Attendre un AVC"],
+                        correct: 1,
+                        explanation: "Score ≥2 chez l'homme = anticoagulation recommandée. Les AOD sont préférés aux AVK sauf CI (valve mécanique, RM)."
+                    },
+                    {
+                        question: "Quel AOD peut-on prescrire ?",
+                        options: ["Apixaban", "Clopidogrel", "Aspirine", "Héparine au long cours"],
+                        correct: 0,
+                        explanation: "Apixaban, rivaroxaban, édoxaban, dabigatran sont les AOD disponibles. Ils sont préférés aux AVK en 1ère intention."
+                    },
+                    {
+                        question: "Quelle stratégie pour le contrôle du rythme ?",
+                        options: ["Rien, FA bien tolérée", "Cardioversion si symptomatique", "Ablation immédiate", "Choc électrique en urgence"],
+                        correct: 1,
+                        explanation: "Si FA bien tolérée : contrôle de la fréquence. Si symptomatique malgré contrôle FC : discuter cardioversion ± ablation."
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "Rétrécissement aortique serré",
+                description: "Homme 78 ans, syncope à l'effort",
+                difficulty: "hard",
+                scenario: "M. Legrand, 78 ans, est adressé pour syncope survenue en montant un escalier. Il décrit aussi une dyspnée d'effort progressive depuis 6 mois. Souffle systolique éjectionnel 4/6 au foyer aortique irradiant aux carotides.",
+                steps: [
+                    {
+                        question: "Quelle est la triade classique du RA serré symptomatique ?",
+                        options: ["Fièvre, souffle, splénomégalie", "Angor, syncope, dyspnée d'effort", "Palpitations, œdèmes, ascite", "Céphalées, acouphènes, vertiges"],
+                        correct: 1,
+                        explanation: "Triade du RA serré : Angor (même sans coronaropathie), Syncope d'effort, Dyspnée d'effort. Apparition = pronostic sévère."
+                    },
+                    {
+                        question: "L'écho montre une surface aortique à 0.7 cm², gradient moyen 50 mmHg. Diagnostic ?",
+                        options: ["RA modéré", "RA serré", "RA critique", "RM serré"],
+                        correct: 1,
+                        explanation: "RA serré : surface < 1 cm², gradient moyen > 40 mmHg, Vmax > 4 m/s. Ici S = 0.7 cm² et gradient 50 mmHg = RA serré."
+                    },
+                    {
+                        question: "Quel est le traitement du RA serré symptomatique ?",
+                        options: ["Traitement médical seul", "Remplacement valvulaire (chirurgical ou TAVI)", "Valvuloplastie au ballon définitive", "Surveillance simple"],
+                        correct: 1,
+                        explanation: "RA serré symptomatique = indication formelle au remplacement valvulaire. TAVI si haut risque chirurgical ou > 75 ans."
+                    },
+                    {
+                        question: "Pourquoi les vasodilatateurs sont-ils dangereux dans le RA serré ?",
+                        options: ["Risque d'infection", "Risque d'hypotension sévère (obstacle fixe)", "Risque de thrombose", "Aucun danger"],
+                        correct: 1,
+                        explanation: "Le RA crée un obstacle fixe à l'éjection. Les vasodilatateurs diminuent les résistances périphériques sans augmenter le débit → hypotension sévère."
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "Douleur thoracique aux urgences",
+                description: "Femme 45 ans, douleur thoracique atypique",
+                difficulty: "hard",
+                scenario: "Mme Moreau, 45 ans, sans FDRCV, consulte pour douleur thoracique gauche, augmentée à l'inspiration profonde, soulagée penchée en avant. Température 38.2°C. Un syndrome grippal il y a 10 jours.",
+                steps: [
+                    {
+                        question: "Quel diagnostic évoquez-vous en premier ?",
+                        options: ["Infarctus du myocarde", "Péricardite aiguë", "Embolie pulmonaire", "Dissection aortique"],
+                        correct: 1,
+                        explanation: "Douleur positionnelle (soulagée penché en avant), augmentée à l'inspiration, contexte viral récent + fièvre = péricardite aiguë."
+                    },
+                    {
+                        question: "Quel signe ECG attendez-vous ?",
+                        options: ["Sus-ST concave diffus + sous-décalage PQ", "Sus-ST convexe en V1-V4", "Ondes Q de nécrose", "QRS larges"],
+                        correct: 0,
+                        explanation: "Péricardite : sus-ST concave (en \"selle de chameau\"), diffus (pas de territoire), + sous-décalage PQ (pathognomonique)."
+                    },
+                    {
+                        question: "Le bilan montre troponine légèrement élevée. Que faites-vous ?",
+                        options: ["Coronarographie en urgence", "C'est une myopéricardite, surveillance", "Fibrinolyse immédiate", "Rien de particulier"],
+                        correct: 1,
+                        explanation: "Troponine élevée dans péricardite = myopéricardite (atteinte myocardique associée). Pas d'indication à coro si contexte typique viral."
+                    },
+                    {
+                        question: "Quel est le traitement de première intention ?",
+                        options: ["Corticoïdes d'emblée", "Aspirine forte dose + colchicine", "Antibiotiques IV", "Chirurgie péricardique"],
+                        correct: 1,
+                        explanation: "Péricardite aiguë virale/idiopathique : Aspirine 750-1000mg x3/j + Colchicine 0.5mg x2/j pendant 3 mois. Corticoïdes = CI relative (récidives)."
+                    }
+                ]
+            }
+        ];
+
+        let currentCase = null;
+        let currentCaseStep = 0;
+        let caseScore = 0;
+
+        function initCasCliniques() {
+            const listEl = document.getElementById('cas-list');
+            listEl.innerHTML = clinicalCases.map(c => `
+                <div class="cas-card" onclick="startCase(${c.id})">
+                    <h4>📋 ${c.title}</h4>
+                    <p>${c.description}</p>
+                    <span class="difficulty ${c.difficulty}">${c.difficulty === 'easy' ? 'Facile' : c.difficulty === 'medium' ? 'Moyen' : 'Difficile'}</span>
+                </div>
+            `).join('');
+        }
+
+        function startCase(id) {
+            currentCase = clinicalCases.find(c => c.id === id);
+            currentCaseStep = 0;
+            caseScore = 0;
+
+            document.getElementById('cas-list').style.display = 'none';
+            document.getElementById('cas-detail').classList.add('active');
+            renderCaseStep();
+        }
+
+        function renderCaseStep() {
+            const detailEl = document.getElementById('cas-detail');
+
+            if (currentCaseStep >= currentCase.steps.length) {
+                // Show results
+                const pct = Math.round((caseScore / currentCase.steps.length) * 100);
+                detailEl.innerHTML = `
+                    <div class="cas-result">
+                        <h2>${pct}%</h2>
+                        <p>${caseScore}/${currentCase.steps.length} bonnes réponses</p>
+                        <button class="btn btn-primary" onclick="endCase()">Retour aux cas</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const step = currentCase.steps[currentCaseStep];
+
+            detailEl.innerHTML = `
+                <div class="cas-header">
+                    <h3>${currentCase.title}</h3>
+                    <p>${currentCase.scenario}</p>
+                </div>
+                <div class="cas-progress">
+                    ${currentCase.steps.map((_, i) => `
+                        <div class="cas-progress-dot ${i < currentCaseStep ? 'completed' : i === currentCaseStep ? 'current' : ''}"></div>
+                    `).join('')}
+                </div>
+                <div class="cas-step current">
+                    <h4>Question ${currentCaseStep + 1}/${currentCase.steps.length}</h4>
+                    <p>${step.question}</p>
+                    <div class="cas-options">
+                        ${step.options.map((opt, i) => `
+                            <button class="cas-option" onclick="selectCaseOption(${i}, this)">${opt}</button>
+                        `).join('')}
+                    </div>
+                    <div class="cas-feedback" id="cas-feedback"></div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn btn-primary" id="cas-validate" onclick="validateCaseAnswer()" disabled>Valider</button>
+                        <button class="btn btn-secondary" id="cas-next" onclick="nextCaseStep()" style="display:none;">Suivant →</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        let selectedCaseOption = null;
+
+        function selectCaseOption(idx, btn) {
+            document.querySelectorAll('.cas-option').forEach(o => o.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedCaseOption = idx;
+            document.getElementById('cas-validate').disabled = false;
+        }
+
+        function validateCaseAnswer() {
+            const step = currentCase.steps[currentCaseStep];
+            const isCorrect = selectedCaseOption === step.correct;
+            if (isCorrect) caseScore++;
+
+            document.querySelectorAll('.cas-option').forEach((opt, i) => {
+                opt.classList.add('disabled');
+                opt.onclick = null;
+                if (i === step.correct) opt.classList.add('correct');
+                else if (i === selectedCaseOption && !isCorrect) opt.classList.add('incorrect');
+            });
+
+            const feedback = document.getElementById('cas-feedback');
+            feedback.className = `cas-feedback show ${isCorrect ? 'success' : 'error'}`;
+            feedback.innerHTML = `
+                <h5>${isCorrect ? '✓ Correct !' : '✗ Incorrect'}</h5>
+                <p>${step.explanation}</p>
+            `;
+
+            document.getElementById('cas-validate').style.display = 'none';
+            document.getElementById('cas-next').style.display = 'inline-block';
+        }
+
+        function nextCaseStep() {
+            currentCaseStep++;
+            selectedCaseOption = null;
+            renderCaseStep();
+        }
+
+        function endCase() {
+            currentCase = null;
+            document.getElementById('cas-list').style.display = 'grid';
+            document.getElementById('cas-detail').classList.remove('active');
+            document.getElementById('cas-detail').innerHTML = '';
+        }
+
+        // Initialize new sections on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Previous init already there, add:
+            setTimeout(() => {
+                if (document.getElementById('anatomy-svg')) {
+                    showAnatomyView('heart');
+                }
+                if (document.getElementById('algo-flowchart')) {
+                    renderAlgorithm();
+                }
+                if (document.getElementById('cas-list')) {
+                    initCasCliniques();
+                }
+            }, 100);
+        });
     </script>
 </body>
 </html>
