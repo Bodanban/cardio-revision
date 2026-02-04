@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardiologie - Outil de Révision</title>
+    <style>
+        :root {
+            --primary: #e63946;
+            --primary-dark: #c1121f;
+            --secondary: #457b9d;
+            --accent: #a8dadc;
+            --dark: #1d3557;
+            --light: #f1faee;
+            --success: #2a9d8f;
+            --warning: #e9c46a;
+            --danger: #e76f51;
+            /* Light mode specific */
+            --bg-gradient-start: #1d3557;
+            --bg-gradient-end: #457b9d;
+            --card-bg: white;
+            --card-bg-alt: #f1faee;
+            --text-primary: #1d3557;
+            --text-secondary: #555;
+            --text-muted: #666;
+            --border-color: #ddd;
+            --input-bg: white;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient-start: #0d1b2a;
+            --bg-gradient-end: #1b263b;
+            --card-bg: #1e2a3a;
+            --card-bg-alt: #253545;
+            --text-primary: #e0e6ed;
+            --text-secondary: #a8b2c1;
+            --text-muted: #8892a2;
+            --border-color: #3d4f61;
+            --input-bg: #253545;
+            --light: #253545;
+            --dark: #e0e6ed;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        header { text-align: center; padding: 30px 20px; color: white; }
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        header h1::before { content: "❤️"; font-size: 2rem; }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+
+        /* Notification Banner */
+        .notification-banner {
+            background: linear-gradient(135deg, var(--warning) 0%, #f4a261 100%);
+            color: var(--dark);
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            animation: pulse-border 2s infinite;
+        }
+        .notification-banner.show { display: flex; }
+        .notification-banner .icon { font-size: 2rem; }
+        .notification-banner .content { flex: 1; }
+        .notification-banner h4 { margin-bottom: 5px; }
+        .notification-banner .actions { display: flex; gap: 10px; }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(233, 196, 106, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(233, 196, 106, 0); }
+        }
+
+        nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+        nav button {
+            padding: 12px 24px; border: none; border-radius: 25px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+            background: rgba(255,255,255,0.2); color: white;
+            position: relative;
+        }
+        nav button:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+        nav button.active { background: var(--primary); box-shadow: 0 4px 15px rgba(230, 57, 70, 0.4); }
+        nav button .badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--danger); color: white;
+            border-radius: 50%; width: 22px; height: 22px;
+            font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+        }
+
+        .main-content {
+            background: var(--card-bg); border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); min-height: 500px;
+            transition: background 0.3s ease;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: var(--card-bg); border: 2px solid var(--border-color);
+            border-radius: 50px; padding: 8px 16px; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            transition: all 0.3s ease; font-size: 1rem;
+            color: var(--text-primary);
+        }
+        .theme-toggle:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .theme-toggle .icon { font-size: 1.2rem; }
+
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Dashboard */
+        .section h2 { color: var(--text-primary); }
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--dark) 100%);
+            color: white; padding: 25px; border-radius: 15px; text-align: center;
+        }
+        .stat-card h3 { font-size: 2.5rem; margin-bottom: 5px; }
+        .stat-card p { opacity: 0.9; }
+        .stat-card.urgent { background: linear-gradient(135deg, var(--danger) 0%, var(--primary-dark) 100%); }
+
+        .progress-container { background: var(--card-bg-alt); padding: 25px; border-radius: 15px; margin-top: 20px; transition: background 0.3s ease; }
+        .progress-container h3 { margin-bottom: 20px; color: var(--text-primary); }
+        .phase-progress { margin-bottom: 15px; }
+        .phase-progress label { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 500; color: var(--text-primary); }
+        .progress-bar { height: 12px; background: var(--border-color); border-radius: 6px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--danger) 100%); border-radius: 6px; transition: width 0.5s ease; }
+
+        /* Revision Calendar */
+        .revision-calendar { background: var(--card-bg-alt); padding: 25px; border-radius: 15px; margin-top: 20px; transition: background 0.3s ease; }
+        .revision-calendar h3 { margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        .revision-list { display: flex; flex-direction: column; gap: 10px; }
+        .revision-item {
+            display: flex; align-items: center; gap: 15px; padding: 15px;
+            background: var(--card-bg); border-radius: 10px; border-left: 4px solid var(--secondary);
+            transition: background 0.3s ease;
+        }
+        .revision-item.urgent { border-left-color: var(--danger); background: rgba(231, 111, 81, 0.1); }
+        .revision-item.today { border-left-color: var(--warning); background: rgba(233, 196, 106, 0.15); }
+        .revision-item.done { border-left-color: var(--success); opacity: 0.7; }
+        .revision-item .date { font-weight: bold; min-width: 80px; }
+        .revision-item .topic { flex: 1; color: var(--text-primary); }
+        .revision-item .interval { font-size: 0.85rem; color: var(--text-muted); padding: 4px 10px; background: var(--card-bg-alt); border-radius: 15px; }
+        .revision-item button { padding: 8px 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+        .revision-item .btn-revise { background: var(--primary); color: white; }
+        .revision-item .btn-done { background: var(--success); color: white; }
+
+        /* Category Selection */
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .category-btn {
+            padding: 20px; border: 2px solid var(--border-color); border-radius: 12px;
+            background: var(--card-bg); cursor: pointer; transition: all 0.3s ease; text-align: left;
+        }
+        .category-btn:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .category-btn.selected { border-color: var(--primary); background: linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(230,57,70,0.05) 100%); }
+        .category-btn h4 { color: var(--text-primary); margin-bottom: 5px; }
+        .category-btn p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Flashcard */
+        .flashcard-container { perspective: 1000px; margin: 30px auto; max-width: 600px; }
+        .flashcard { width: 100%; min-height: 300px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; cursor: pointer; }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back {
+            position: absolute; width: 100%; min-height: 300px; backface-visibility: hidden;
+            border-radius: 20px; padding: 40px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        .flashcard-front { background: linear-gradient(135deg, var(--dark) 0%, var(--secondary) 100%); color: white; }
+        .flashcard-back { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; transform: rotateY(180deg); }
+        .flashcard-front h3 { font-size: 1.5rem; margin-bottom: 10px; opacity: 0.8; }
+        .flashcard-front p, .flashcard-back p { font-size: 1.2rem; line-height: 1.6; }
+        .flashcard-hint { margin-top: 20px; font-size: 0.9rem; opacity: 0.7; }
+        .flashcard-controls { display: flex; justify-content: center; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
+        .flashcard-controls button { padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; }
+        .btn-easy { background: var(--success); color: white; }
+        .btn-medium { background: var(--warning); color: var(--dark); }
+        .btn-hard { background: var(--danger); color: white; }
+        .flashcard-controls button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .flashcard-progress { text-align: center; margin-top: 20px; color: #666; }
+
+        /* QCM */
+        .qcm-container { max-width: 800px; margin: 0 auto; }
+        .qcm-question { background: var(--card-bg-alt); padding: 30px; border-radius: 15px; margin-bottom: 20px; transition: background 0.3s ease; }
+        .qcm-question h3 { color: var(--text-muted); margin-bottom: 10px; font-size: 0.9rem; }
+        .qcm-question p { font-size: 1.2rem; color: var(--text-primary); line-height: 1.5; }
+        .qcm-options { display: flex; flex-direction: column; gap: 12px; }
+        .qcm-option { padding: 18px 25px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; background: var(--card-bg); text-align: left; font-size: 1rem; color: var(--text-primary); }
+        .qcm-option:hover:not(.disabled) { border-color: var(--secondary); background: rgba(69, 123, 157, 0.05); }
+        .qcm-option.selected { border-color: var(--secondary); background: rgba(69, 123, 157, 0.1); }
+        .qcm-option.correct { border-color: var(--success); background: rgba(42, 157, 143, 0.15); }
+        .qcm-option.incorrect { border-color: var(--danger); background: rgba(231, 111, 81, 0.15); }
+        .qcm-option.disabled { cursor: not-allowed; }
+        .qcm-explanation { margin-top: 20px; padding: 20px; border-radius: 12px; background: rgba(42, 157, 143, 0.1); border-left: 4px solid var(--success); display: none; }
+        .qcm-explanation.show { display: block; animation: fadeIn 0.3s ease; }
+        .qcm-explanation h4 { color: var(--success); margin-bottom: 10px; }
+        .qcm-buttons { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .qcm-score { text-align: center; padding: 40px; background: var(--card-bg-alt); border-radius: 15px; transition: background 0.3s ease; }
+        .qcm-score h2 { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
+        .qcm-score p { color: var(--text-primary); }
+        .timer { text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--text-primary); margin-bottom: 20px; }
+        .mode-selector { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .mode-card { padding: 25px 35px; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 15px; cursor: pointer; transition: all 0.3s ease; text-align: center; min-width: 150px; }
+        .mode-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .mode-card.selected { border-color: var(--primary); background: linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(230,57,70,0.05) 100%); }
+        .mode-card h4 { color: var(--text-primary); margin-bottom: 5px; }
+        .mode-card p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* ECG Section */
+        .ecg-viewer { max-width: 900px; margin: 0 auto; }
+        .ecg-display { background: #fff9f0; border: 2px solid var(--border-color); border-radius: 15px; padding: 20px; margin-bottom: 20px; overflow-x: auto; }
+        [data-theme="dark"] .ecg-display { background: #2a2520; }
+        .ecg-svg { width: 100%; min-width: 600px; height: 250px; }
+        .ecg-grid { stroke: #ffcccc; stroke-width: 0.5; }
+        .ecg-grid-major { stroke: #ff9999; stroke-width: 1; }
+        .ecg-trace { fill: none; stroke: #000; stroke-width: 2; }
+        .ecg-label { font-size: 12px; fill: #666; }
+        .ecg-controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .ecg-info { background: var(--card-bg-alt); padding: 25px; border-radius: 15px; transition: background 0.3s ease; }
+        .ecg-info h3 { color: var(--text-primary); margin-bottom: 15px; }
+        .ecg-info p { color: var(--text-muted); }
+        .ecg-info ul { margin-left: 20px; color: var(--text-secondary); }
+        .ecg-info li { margin-bottom: 8px; }
+        .ecg-answer { display: none; margin-top: 20px; padding: 20px; background: rgba(42, 157, 143, 0.1); border-radius: 10px; border-left: 4px solid var(--success); }
+        .ecg-answer.show { display: block; }
+
+        /* Study Plan */
+        .study-plan { max-width: 900px; margin: 0 auto; }
+        .study-plan-intro { color: var(--text-muted); }
+        .phase { background: var(--card-bg-alt); border-radius: 15px; margin-bottom: 20px; overflow: hidden; transition: background 0.3s ease; }
+        .phase-header { padding: 20px 25px; background: linear-gradient(135deg, var(--dark) 0%, var(--secondary) 100%); color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .phase-header h3 { display: flex; align-items: center; gap: 10px; }
+        .phase-header .arrow { transition: transform 0.3s ease; }
+        .phase.open .phase-header .arrow { transform: rotate(180deg); }
+        .phase-content { padding: 0; max-height: 0; overflow: hidden; transition: all 0.3s ease; }
+        .phase.open .phase-content { padding: 25px; max-height: 3000px; }
+        .topic { padding: 15px; margin-bottom: 10px; background: var(--card-bg); border-radius: 10px; border-left: 4px solid var(--primary); transition: background 0.3s ease; }
+        .topic h4 { color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .topic ul { margin-left: 20px; color: var(--text-secondary); }
+        .topic li { margin-bottom: 5px; }
+        .topic-checkbox { width: 20px; height: 20px; cursor: pointer; }
+        .topic-revision { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
+        .revision-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 15px; background: var(--card-bg-alt); color: var(--text-muted); }
+        .revision-badge.due { background: var(--warning); color: var(--dark); font-weight: bold; }
+        .revision-badge.overdue { background: var(--danger); color: white; font-weight: bold; }
+        .revision-badge.done { background: var(--success); color: white; }
+        .revision-badge.upcoming { background: var(--accent); color: var(--dark); }
+
+        .settings-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .settings-section h3 { color: var(--text-primary); }
+        .reset-btn { background: transparent; border: 2px solid var(--danger); color: var(--danger); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease; }
+        .reset-btn:hover { background: var(--danger); color: white; }
+
+        /* Anatomie Section */
+        .anatomy-container { max-width: 900px; margin: 0 auto; }
+        .anatomy-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .anatomy-tab { padding: 12px 24px; border: 2px solid var(--border-color); border-radius: 25px; background: var(--card-bg); cursor: pointer; transition: all 0.3s ease; color: var(--text-primary); font-weight: 500; }
+        .anatomy-tab:hover { border-color: var(--primary); }
+        .anatomy-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .anatomy-viewer { display: flex; gap: 30px; flex-wrap: wrap; }
+        .anatomy-svg-container { flex: 1; min-width: 300px; background: var(--card-bg-alt); border-radius: 15px; padding: 20px; text-align: center; }
+        .anatomy-svg { width: 100%; max-width: 400px; height: auto; }
+        .anatomy-svg .clickable { cursor: pointer; transition: all 0.2s ease; }
+        .anatomy-svg .clickable:hover { filter: brightness(1.2); }
+        .anatomy-svg .highlighted { fill: var(--primary) !important; stroke: var(--primary-dark) !important; stroke-width: 3px; }
+        .anatomy-info { flex: 1; min-width: 280px; }
+        .anatomy-info h3 { color: var(--text-primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .anatomy-info p { color: var(--text-secondary); margin-bottom: 10px; line-height: 1.6; }
+        .anatomy-info ul { margin-left: 20px; color: var(--text-secondary); }
+        .anatomy-info li { margin-bottom: 8px; }
+        .anatomy-legend { margin-top: 20px; padding: 15px; background: var(--card-bg); border-radius: 10px; }
+        .anatomy-legend h4 { color: var(--text-primary); margin-bottom: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; padding: 5px; border-radius: 5px; transition: background 0.2s; }
+        .legend-item:hover { background: var(--card-bg-alt); }
+        .legend-color { width: 20px; height: 20px; border-radius: 4px; }
+
+        /* Algorithmes Section */
+        .algo-container { max-width: 900px; margin: 0 auto; }
+        .algo-selector { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .algo-card { flex: 1; min-width: 200px; padding: 20px; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 15px; cursor: pointer; transition: all 0.3s ease; }
+        .algo-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .algo-card.active { border-color: var(--primary); background: linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(230,57,70,0.05) 100%); }
+        .algo-card h4 { color: var(--text-primary); margin-bottom: 8px; }
+        .algo-card p { color: var(--text-muted); font-size: 0.9rem; }
+        .algo-flowchart { background: var(--card-bg-alt); border-radius: 15px; padding: 30px; overflow-x: auto; }
+        .algo-step { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+        .algo-box { padding: 15px 25px; border-radius: 10px; text-align: center; max-width: 300px; cursor: pointer; transition: all 0.2s ease; }
+        .algo-box:hover { transform: scale(1.02); }
+        .algo-box.start { background: var(--success); color: white; border-radius: 25px; }
+        .algo-box.question { background: var(--warning); color: var(--dark); transform: rotate(0deg); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); padding: 30px 40px; }
+        .algo-box.action { background: var(--secondary); color: white; }
+        .algo-box.danger { background: var(--danger); color: white; }
+        .algo-box.end { background: var(--primary); color: white; border-radius: 25px; }
+        .algo-arrow { font-size: 24px; color: var(--text-muted); margin: 10px 0; }
+        .algo-branches { display: flex; gap: 40px; justify-content: center; margin-top: 20px; }
+        .algo-branch { display: flex; flex-direction: column; align-items: center; }
+        .algo-branch-label { font-weight: bold; color: var(--text-primary); margin-bottom: 10px; padding: 5px 15px; background: var(--card-bg); border-radius: 15px; }
+        .algo-detail { margin-top: 20px; padding: 20px; background: var(--card-bg); border-radius: 10px; border-left: 4px solid var(--primary); display: none; }
+        .algo-detail.show { display: block; animation: fadeIn 0.3s ease; }
+        .algo-detail h4 { color: var(--text-primary); margin-bottom: 10px; }
+        .algo-detail p, .algo-detail li { color: var(--text-secondary); }
+
+        /* Cas Cliniques Section */
+        .cas-container { max-width: 900px; margin: 0 auto; }
+        .cas-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .cas-card { background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 15px; padding: 25px; cursor: pointer; transition: all 0.3s ease; }
+        .cas-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .cas-card h4 { color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .cas-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px; }
+        .cas-card .difficulty { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 500; }
+        .cas-card .difficulty.easy { background: rgba(42, 157, 143, 0.2); color: var(--success); }
+        .cas-card .difficulty.medium { background: rgba(233, 196, 106, 0.2); color: #b8860b; }
+        .cas-card .difficulty.hard { background: rgba(231, 111, 81, 0.2); color: var(--danger); }
+        .cas-detail { display: none; }
+        .cas-detail.active { display: block; }
+        .cas-header { background: var(--card-bg-alt); padding: 25px; border-radius: 15px; margin-bottom: 20px; }
+        .cas-header h3 { color: var(--text-primary); margin-bottom: 15px; }
+        .cas-header p { color: var(--text-secondary); line-height: 1.6; }
+        .cas-step { background: var(--card-bg); border-radius: 15px; padding: 25px; margin-bottom: 20px; border-left: 4px solid var(--secondary); }
+        .cas-step.current { border-left-color: var(--primary); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .cas-step.completed { border-left-color: var(--success); opacity: 0.8; }
+        .cas-step h4 { color: var(--text-primary); margin-bottom: 15px; }
+        .cas-step p { color: var(--text-secondary); margin-bottom: 15px; }
+        .cas-options { display: flex; flex-direction: column; gap: 10px; }
+        .cas-option { padding: 15px 20px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; background: var(--card-bg); color: var(--text-primary); text-align: left; }
+        .cas-option:hover:not(.disabled) { border-color: var(--secondary); }
+        .cas-option.selected { border-color: var(--secondary); background: rgba(69, 123, 157, 0.1); }
+        .cas-option.correct { border-color: var(--success); background: rgba(42, 157, 143, 0.15); }
+        .cas-option.incorrect { border-color: var(--danger); background: rgba(231, 111, 81, 0.15); }
+        .cas-feedback { margin-top: 15px; padding: 15px; border-radius: 10px; display: none; }
+        .cas-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+        .cas-feedback.success { background: rgba(42, 157, 143, 0.1); border-left: 4px solid var(--success); }
+        .cas-feedback.error { background: rgba(231, 111, 81, 0.1); border-left: 4px solid var(--danger); }
+        .cas-feedback h5 { color: var(--text-primary); margin-bottom: 5px; }
+        .cas-feedback p { color: var(--text-secondary); }
+        .cas-progress { display: flex; gap: 8px; margin-bottom: 20px; }
+        .cas-progress-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--border-color); }
+        .cas-progress-dot.completed { background: var(--success); }
+        .cas-progress-dot.current { background: var(--primary); }
+        .cas-result { text-align: center; padding: 40px; background: var(--card-bg-alt); border-radius: 15px; }
+        .cas-result h2 { color: var(--primary); font-size: 2.5rem; margin-bottom: 10px; }
+        .cas-result p { color: var(--text-secondary); margin-bottom: 20px; }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            nav button { padding: 10px 18px; font-size: 0.9rem; }
+            .main-content { padding: 20px; }
+            .flashcard-front, .flashcard-back { padding: 25px; }
+            .flashcard-front p, .flashcard-back p { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Changer de thème">
+        <span class="icon" id="theme-icon">🌙</span>
+        <span id="theme-text">Sombre</span>
+    </button>
+
+    <div class="container">
+        <header>
+            <h1>Cardiologie</h1>
+            <p>Outil de révision avec répétition espacée</p>
+        </header>
+
+        <!-- Notification Banner -->
+        <div class="notification-banner" id="notification-banner">
+            <div class="icon">📚</div>
+            <div class="content">
+                <h4 id="notification-title">Révisions du jour</h4>
+                <p id="notification-text">Vous avez des révisions à faire aujourd'hui !</p>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="showSection('plan'); updateNavButtons('plan');">Voir le plan</button>
+                <button class="btn btn-secondary" onclick="hideNotification()">Plus tard</button>
+            </div>
+        </div>
+
+        <nav>
+            <button class="active" id="nav-dashboard" onclick="showSection('dashboard'); updateNavButtons('dashboard');">📊 Tableau de bord</button>
+            <button id="nav-flashcards" onclick="showSection('flashcards'); updateNavButtons('flashcards');">🎴 Flashcards</button>
+            <button id="nav-qcm" onclick="showSection('qcm'); updateNavButtons('qcm');">📝 QCM</button>
+            <button id="nav-ecg" onclick="showSection('ecg'); updateNavButtons('ecg');">💓 ECG</button>
+            <button id="nav-anatomie" onclick="showSection('anatomie'); updateNavButtons('anatomie');">🫀 Anatomie</button>
+            <button id="nav-algo" onclick="showSection('algo'); updateNavButtons('algo');">🔀 Algorithmes</button>
+            <button id="nav-cas" onclick="showSection('cas'); updateNavButtons('cas');">🏥 Cas cliniques</button>
+            <button id="nav-plan" onclick="showSection('plan'); updateNavButtons('plan');">
+                📚 Plan d'étude
+                <span class="badge" id="revision-badge" style="display:none;">0</span>
+            </button>
+        </nav>
+
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <h2 style="margin-bottom: 25px; color: var(--dark);">📊 Votre progression</h2>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <h3 id="total-cards">0</h3>
+                        <p>Flashcards étudiées</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="total-qcm">0</h3>
+                        <p>QCM complétés</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="avg-score">0%</h3>
+                        <p>Score moyen QCM</p>
+                    </div>
+                    <div class="stat-card" id="revision-card">
+                        <h3 id="revisions-due">0</h3>
+                        <p>Révisions à faire</p>
+                    </div>
+                </div>
+
+                <div class="revision-calendar">
+                    <h3>📅 Prochaines révisions</h3>
+                    <div class="revision-list" id="revision-list">
+                        <!-- Revision items will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <h3>📈 Progression par phase</h3>
+                    <div class="phase-progress">
+                        <label><span>Phase 1 - Fondations</span><span id="phase1-pct">0%</span></label>
+                        <div class="progress-bar"><div class="progress-bar-fill" id="phase1-bar" style="width: 0%"></div></div>
+                    </div>
+                    <div class="phase-progress">
+                        <label><span>Phase 2 - Examens complémentaires</span><span id="phase2-pct">0%</span></label>
+                        <div class="progress-bar"><div class="progress-bar-fill" id="phase2-bar" style="width: 0%"></div></div>
+                    </div>
+                    <div class="phase-progress">
+                        <label><span>Phase 3 - Grandes pathologies</span><span id="phase3-pct">0%</span></label>
+                        <div class="progress-bar"><div class="progress-bar-fill" id="phase3-bar" style="width: 0%"></div></div>
+                    </div>
+                    <div class="phase-progress">
+                        <label><span>Phase 4 - Pathologies complémentaires</span><span id="phase4-pct">0%</span></label>
+                        <div class="progress-bar"><div class="progress-bar-fill" id="phase4-bar" style="width: 0%"></div></div>
+                    </div>
+                    <div class="phase-progress">
+                        <label><span>Phase 5 - Urgences et synthèse</span><span id="phase5-pct">0%</span></label>
+                        <div class="progress-bar"><div class="progress-bar-fill" id="phase5-bar" style="width: 0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 style="margin-bottom: 15px; color: var(--dark);">⚙️ Paramètres</h3>
+                    <button class="reset-btn" onclick="resetProgress()">🗑️ Réinitialiser la progression</button>
+                </div>
+            </div>
+
+            <!-- Flashcards Section -->
+            <div id="flashcards" class="section">
+                <h2 style="margin-bottom: 25px; color: var(--dark);">🎴 Flashcards</h2>
+                <div id="flashcard-categories" class="category-grid"></div>
+                <div id="flashcard-area" style="display: none;">
+                    <div class="flashcard-container">
+                        <div class="flashcard" id="flashcard" onclick="flipCard()">
+                            <div class="flashcard-front">
+                                <h3 id="card-category">Catégorie</h3>
+                                <p id="card-question">Question</p>
+                                <p class="flashcard-hint">Cliquez pour révéler la réponse</p>
+                            </div>
+                            <div class="flashcard-back">
+                                <p id="card-answer">Réponse</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flashcard-controls">
+                        <button class="btn-hard" onclick="rateCard('hard')">❌ Difficile</button>
+                        <button class="btn-medium" onclick="rateCard('medium')">🤔 Moyen</button>
+                        <button class="btn-easy" onclick="rateCard('easy')">✅ Facile</button>
+                    </div>
+                    <p class="flashcard-progress">Carte <span id="current-card">1</span> sur <span id="total-cards-session">10</span></p>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="endFlashcardSession()">Terminer la session</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QCM Section -->
+            <div id="qcm" class="section">
+                <h2 style="margin-bottom: 25px; color: var(--dark);">📝 Quiz QCM</h2>
+                <div id="qcm-setup">
+                    <h3 style="margin-bottom: 20px; color: var(--dark);">Choisissez un thème :</h3>
+                    <div id="qcm-categories" class="category-grid"></div>
+                    <div class="mode-selector">
+                        <div class="mode-card selected" onclick="selectQCMMode(10, this)"><h4>🎯 Rapide</h4><p>10 questions</p></div>
+                        <div class="mode-card" onclick="selectQCMMode(20, this)"><h4>📚 Standard</h4><p>20 questions</p></div>
+                        <div class="mode-card" onclick="selectQCMMode(30, this)"><h4>🏆 Complet</h4><p>30 questions</p></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" onclick="startQCM()" id="start-qcm-btn" disabled>Commencer le Quiz</button>
+                    </div>
+                </div>
+                <div id="qcm-quiz" style="display: none;">
+                    <div class="timer" id="qcm-timer">⏱️ 00:00</div>
+                    <div class="qcm-container">
+                        <div class="qcm-question">
+                            <h3 id="qcm-progress">Question 1/10</h3>
+                            <p id="qcm-question-text">Question</p>
+                        </div>
+                        <div class="qcm-options" id="qcm-options"></div>
+                        <div class="qcm-explanation" id="qcm-explanation">
+                            <h4>💡 Explication</h4>
+                            <p id="qcm-explanation-text"></p>
+                        </div>
+                        <div class="qcm-buttons">
+                            <button class="btn btn-primary" id="qcm-validate" onclick="validateQCMAnswer()" disabled>Valider</button>
+                            <button class="btn btn-secondary" id="qcm-next" onclick="nextQCMQuestion()" style="display: none;">Question suivante →</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="qcm-results" style="display: none;">
+                    <div class="qcm-score">
+                        <h2 id="qcm-final-score">0%</h2>
+                        <p id="qcm-score-details">0 bonnes réponses sur 10</p>
+                        <p id="qcm-time-taken" style="margin-top: 10px; color: #666;"></p>
+                    </div>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn btn-primary" onclick="restartQCM()">Recommencer</button>
+                        <button class="btn btn-secondary" onclick="showQCMSetup()">Changer de thème</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ECG Section -->
+            <div id="ecg" class="section">
+                <h2 style="margin-bottom: 25px; color: var(--dark);">💓 Entraînement ECG</h2>
+                <div class="ecg-viewer">
+                    <div class="ecg-controls">
+                        <button class="btn btn-primary" onclick="loadRandomECG()">🔄 Nouvel ECG</button>
+                        <button class="btn btn-secondary" onclick="showECGAnswer()">👁️ Voir la réponse</button>
+                    </div>
+                    <div class="ecg-display">
+                        <svg class="ecg-svg" id="ecg-svg" viewBox="0 0 800 200"></svg>
+                    </div>
+                    <div class="ecg-info">
+                        <h3 id="ecg-question">Quel est ce tracé ECG ?</h3>
+                        <p id="ecg-hint" style="color: #666; margin-top: 10px;"></p>
+                        <div class="ecg-answer" id="ecg-answer">
+                            <h4 id="ecg-diagnosis"></h4>
+                            <ul id="ecg-criteria"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anatomie Section -->
+            <div id="anatomie" class="section">
+                <h2 style="margin-bottom: 25px;">🫀 Schémas anatomiques interactifs</h2>
+                <div class="anatomy-container">
+                    <div class="anatomy-tabs">
+                        <button class="anatomy-tab active" onclick="showAnatomyView('heart')">Cœur</button>
+                        <button class="anatomy-tab" onclick="showAnatomyView('coronary')">Coronaires</button>
+                        <button class="anatomy-tab" onclick="showAnatomyView('conduction')">Système de conduction</button>
+                        <button class="anatomy-tab" onclick="showAnatomyView('cycle')">Cycle cardiaque</button>
+                    </div>
+                    <div class="anatomy-viewer">
+                        <div class="anatomy-svg-container">
+                            <svg id="anatomy-svg" class="anatomy-svg" viewBox="0 0 400 400"></svg>
+                        </div>
+                        <div class="anatomy-info">
+                            <h3 id="anatomy-title">🫀 Sélectionnez une structure</h3>
+                            <p id="anatomy-description">Cliquez sur les différentes parties du schéma pour en apprendre plus.</p>
+                            <div id="anatomy-details"></div>
+                            <div class="anatomy-legend" id="anatomy-legend"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithmes Section -->
+            <div id="algo" class="section">
+                <h2 style="margin-bottom: 25px;">🔀 Algorithmes décisionnels</h2>
+                <div class="algo-container">
+                    <div class="algo-selector">
+                        <div class="algo-card active" onclick="showAlgorithm('sca')">
+                            <h4>🚨 Syndrome Coronarien Aigu</h4>
+                            <p>Prise en charge du SCA ST+ et ST-</p>
+                        </div>
+                        <div class="algo-card" onclick="showAlgorithm('ic')">
+                            <h4>💔 Insuffisance Cardiaque</h4>
+                            <p>Diagnostic et traitement de l'IC</p>
+                        </div>
+                        <div class="algo-card" onclick="showAlgorithm('fa')">
+                            <h4>💓 Fibrillation Auriculaire</h4>
+                            <p>Gestion de la FA et anticoagulation</p>
+                        </div>
+                        <div class="algo-card" onclick="showAlgorithm('acr')">
+                            <h4>⚡ Arrêt Cardio-Respiratoire</h4>
+                            <p>Algorithme de réanimation</p>
+                        </div>
+                    </div>
+                    <div class="algo-flowchart" id="algo-flowchart">
+                        <!-- Algorithm will be rendered here -->
+                    </div>
+                    <div class="algo-detail" id="algo-detail">
+                        <h4 id="algo-detail-title"></h4>
+                        <div id="algo-detail-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cas Cliniques Section -->
+            <div id="cas" class="section">
+                <h2 style="margin-bottom: 25px;">🏥 Cas cliniques interactifs</h2>
+                <div class="cas-container">
+                    <div class="cas-list" id="cas-list">
+                        <!-- Cases will be rendered here -->
+                    </div>
+                    <div class="cas-detail" id="cas-detail">
+                        <!-- Case detail will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Plan Section -->
+            <div id="plan" class="section">
+                <h2 style="margin-bottom: 25px;">📚 Plan d'étude avec répétition espacée</h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Cochez un sujet quand vous l'avez étudié. Le système calculera automatiquement vos prochaines révisions selon l'algorithme J+1, J+3, J+7, J+14, J+30.
+                </p>
+                <div class="study-plan" id="study-plan"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        // SPACED REPETITION INTERVALS (in days)
+        // =====================================================
+        const REVISION_INTERVALS = [1, 3, 7, 14, 30];
+        const INTERVAL_LABELS = ['J+1', 'J+3', 'J+7', 'J+14', 'J+30'];
+
+        // =====================================================
+        // DATA - FLASHCARDS (condensed for space)
+        // =====================================================
+        const flashcardsData = {
+            "anatomie": {
+                name: "Anatomie cardiaque", phase: 1,
+                cards: [
+                    {q: "Quelles sont les 4 cavités cardiaques ?", a: "2 oreillettes (droite et gauche) et 2 ventricules (droit et gauche)"},
+                    {q: "Quelles sont les 4 valves cardiaques ?", a: "Mitrale, tricuspide (AV) ; aortique, pulmonaire (sigmoïdes)"},
+                    {q: "D'où naissent les artères coronaires ?", a: "Du sinus de Valsalva, au-dessus de la valve aortique"},
+                    {q: "Où se situe le nœud sinusal ?", a: "Jonction veine cave supérieure - oreillette droite"},
+                    {q: "Quelle artère vascularise la paroi antérieure du VG ?", a: "L'interventriculaire antérieure (IVA)"}
+                ]
+            },
+            "physiologie": {
+                name: "Physiologie cardiaque", phase: 1,
+                cards: [
+                    {q: "Qu'est-ce que la précharge ?", a: "Volume de remplissage ventriculaire en fin de diastole"},
+                    {q: "Qu'est-ce que la postcharge ?", a: "Résistance à l'éjection ventriculaire (RAS)"},
+                    {q: "Loi de Frank-Starling ?", a: "Plus le VG est rempli, plus la force de contraction augmente"},
+                    {q: "FEVG normale ?", a: "55-70%"},
+                    {q: "Débit cardiaque = ?", a: "FC × VES (environ 5 L/min au repos)"}
+                ]
+            },
+            "ecg": {
+                name: "ECG", phase: 2,
+                cards: [
+                    {q: "Durée normale du PR ?", a: "120-200 ms"},
+                    {q: "Durée normale du QRS ?", a: "< 120 ms"},
+                    {q: "Critères du rythme sinusal ?", a: "P positive en DII/DIII/aVF, PR constant, chaque P suivie d'un QRS"},
+                    {q: "Critères de la FA ?", a: "Absence d'ondes P, trémulation, RR irréguliers"},
+                    {q: "BAV 3ème degré ?", a: "Dissociation AV complète, P et QRS indépendants"}
+                ]
+            },
+            "coronarien": {
+                name: "Maladie coronaire", phase: 3,
+                cards: [
+                    {q: "Traitement BASIC post-SCA ?", a: "Bêtabloquant, Antiagrégant, Statine, IEC, Contrôle FDR"},
+                    {q: "Délai reperfusion STEMI ?", a: "< 120 min (< 90 min porte-ballon)"},
+                    {q: "Syndrome de Dressler ?", a: "Péricardite auto-immune 2-8 semaines post-IDM"},
+                    {q: "Différence STEMI/NSTEMI ?", a: "STEMI = occlusion complète + sus-ST ; NSTEMI = partielle sans sus-ST"},
+                    {q: "Complications mécaniques IDM ?", a: "Rupture septale, pilier, paroi libre"}
+                ]
+            },
+            "insuffisance_cardiaque": {
+                name: "Insuffisance cardiaque", phase: 3,
+                cards: [
+                    {q: "Première cause d'IC ?", a: "Cardiopathie ischémique"},
+                    {q: "ICFEr définition ?", a: "FEVG ≤ 40%"},
+                    {q: "4 piliers traitement ICFEr ?", a: "IEC/ARNI + BB + ARM + iSGLT2"},
+                    {q: "Traitement OAP ?", a: "Position assise, O2, diurétiques IV, ± VNI"},
+                    {q: "Indication DAI ?", a: "FEVG ≤ 35% malgré traitement optimal 3 mois"}
+                ]
+            },
+            "valvulopathies": {
+                name: "Valvulopathies", phase: 3,
+                cards: [
+                    {q: "Triade du RA serré ?", a: "Angor, syncope, dyspnée d'effort"},
+                    {q: "Critères RA serré ?", a: "Surface < 1 cm², gradient > 40 mmHg, Vmax > 4 m/s"},
+                    {q: "Étiologie principale du RM ?", a: "RAA (rhumatisme articulaire aigu)"},
+                    {q: "Germes endocardite ?", a: "Staphylocoques, Streptocoques, Entérocoques, HACEK"},
+                    {q: "Souffle de l'IM ?", a: "Holosystolique apex, irradiant à l'aisselle"}
+                ]
+            },
+            "troubles_rythme": {
+                name: "Troubles du rythme", phase: 3,
+                cards: [
+                    {q: "Score CHA₂DS₂-VASc évalue ?", a: "Risque thromboembolique dans la FA"},
+                    {q: "Traitement tachycardie jonctionnelle ?", a: "Manœuvres vagales, puis adénosine IV"},
+                    {q: "Traitement curatif flutter ?", a: "Ablation isthme cavotricuspide (>90% succès)"},
+                    {q: "CI des AOD ?", a: "Valve mécanique, RM significatif"},
+                    {q: "Syndrome WPW ?", a: "Faisceau accessoire, PR court, onde delta"}
+                ]
+            },
+            "urgences": {
+                name: "Urgences CV", phase: 5,
+                cards: [
+                    {q: "5 urgences douleur thoracique ?", a: "SCA, dissection aorte, EP, tamponnade, pneumothorax"},
+                    {q: "Classification Stanford dissection ?", a: "A = ascendante (chir), B = descendante"},
+                    {q: "Triade de Beck ?", a: "Hypotension, turgescence jugulaire, BDC assourdis → tamponnade"},
+                    {q: "Adrénaline dans ACR ?", a: "1 mg IV toutes les 3-5 min"},
+                    {q: "Rythmes choquables ?", a: "FV et TV sans pouls"}
+                ]
+            }
+        };
+
+        // =====================================================
+        // DATA - QCM (condensed)
+        // =====================================================
+        const qcmData = {
+            "anatomie": {
+                name: "Anatomie", phase: 1,
+                questions: [
+                    {q: "Quelle valve sépare OG et VG ?", options: ["Aortique", "Mitrale", "Tricuspide", "Pulmonaire"], correct: 1, explanation: "La valve mitrale (bicuspide) est entre l'OG et le VG."},
+                    {q: "Où se situe le nœud sinusal ?", options: ["Septum IV", "Apex", "Jonction VCS-OD", "Plancher OG"], correct: 2, explanation: "À la jonction veine cave sup - oreillette droite."},
+                    {q: "Combien de feuillets a la tricuspide ?", options: ["2", "3", "4", "5"], correct: 1, explanation: "3 feuillets (antérieur, postérieur, septal)."}
+                ]
+            },
+            "ecg": {
+                name: "ECG", phase: 2,
+                questions: [
+                    {q: "Durée normale du PR ?", options: ["< 100 ms", "120-200 ms", "200-300 ms", "> 300 ms"], correct: 1, explanation: "PR normal = 120-200 ms. > 200 ms = BAV 1."},
+                    {q: "Critères ECG de la FA ?", options: ["P régulières", "Ondes F en dents de scie", "Absence P + RR irréguliers", "PR allongé"], correct: 2, explanation: "FA = pas de P, trémulation, RR irréguliers."},
+                    {q: "Sus-décalage V1-V4 = infarctus ?", options: ["Inférieur", "Latéral", "Antérieur", "Postérieur"], correct: 2, explanation: "V1-V4 = paroi antérieure (territoire IVA)."}
+                ]
+            },
+            "coronarien": {
+                name: "Coronarien", phase: 3,
+                questions: [
+                    {q: "Délai angioplastie STEMI ?", options: ["< 30 min", "< 90 min", "< 3h", "< 6h"], correct: 1, explanation: "Porte-ballon < 90 min, 1er contact-reperfusion < 120 min."},
+                    {q: "BASIC signifie ?", options: ["BB/Aspirine/Statine/IEC/Contrôle", "BB/Amiodarone/Spiro/Insuline/Clopi", "Autre", "Autre"], correct: 0, explanation: "Bêtabloquant, Antiagrégant, Statine, IEC, Contrôle FDR."},
+                    {q: "Rupture de pilier donne ?", options: ["CIV", "IM aiguë", "Tamponnade", "Anévrisme"], correct: 1, explanation: "Rupture pilier = IM aiguë massive, urgence chir."}
+                ]
+            },
+            "insuffisance_cardiaque": {
+                name: "Insuffisance cardiaque", phase: 3,
+                questions: [
+                    {q: "1ère cause d'IC ?", options: ["Valvulopathies", "Ischémique", "HTA", "CMD"], correct: 1, explanation: "Cardiopathie ischémique = 1ère cause."},
+                    {q: "4 piliers ICFEr ?", options: ["Digoxine/furo/aspirine/statine", "IEC-ARNI/BB/ARM/iSGLT2", "Amio/warfarine/dilti/amlo", "Autre"], correct: 1, explanation: "IEC/ARNI + BB + ARM + iSGLT2 = survie."},
+                    {q: "Indication DAI prophylactique ?", options: ["FEVG < 50%", "FEVG ≤ 35% + ttt optimal", "Tout IC", "Post-ACR seul"], correct: 1, explanation: "FEVG ≤ 35% malgré 3 mois de traitement optimal."}
+                ]
+            },
+            "urgences": {
+                name: "Urgences", phase: 5,
+                questions: [
+                    {q: "5 urgences douleur thoracique ?", options: ["Pneumonie/pleurésie/RGO/zona/costo", "SCA/dissection/EP/tamponnade/PNO", "Péricardite/myocardite/angor/spasme/tako", "Autre"], correct: 1, explanation: "SCA, dissection aorte, EP, tamponnade, pneumothorax suffocant."},
+                    {q: "Triade de Beck ?", options: ["Fièvre/souffle/spléno", "HypoTA/TJ/BDC assourdis", "Céphalées/brady/HTA", "Autre"], correct: 1, explanation: "Triade de Beck = tamponnade."},
+                    {q: "Adrénaline ACR ?", options: ["0.5mg/5min", "1mg/3-5min", "2mg/10min", "5mg dose unique"], correct: 1, explanation: "1 mg IV toutes les 3-5 minutes."}
+                ]
+            }
+        };
+
+        // =====================================================
+        // DATA - ECG PATTERNS
+        // =====================================================
+        const ecgPatterns = [
+            {
+                name: "Rythme sinusal normal",
+                hint: "Observez la régularité et la morphologie des ondes",
+                criteria: ["Ondes P positives en DII, DIII, aVF", "PR entre 120-200 ms", "QRS < 120 ms", "Chaque P suivie d'un QRS"],
+                path: "M0,100 L20,100 L25,95 L30,100 L50,100 L55,90 L58,130 L62,70 L65,100 L85,100 L90,95 L95,100"
+            },
+            {
+                name: "Fibrillation auriculaire",
+                hint: "Regardez la ligne de base et la régularité des QRS",
+                criteria: ["Absence d'ondes P identifiables", "Ligne de base irrégulière (trémulation)", "Intervalles RR irrégulièrement irréguliers", "QRS fins (sauf si bloc associé)"],
+                path: "M0,100 L10,98 L15,102 L20,99 L25,101 L30,98 L35,95 L38,130 L42,70 L45,100 L55,102 L60,97 L70,101 L75,95 L78,135 L82,65 L85,100"
+            },
+            {
+                name: "Flutter auriculaire",
+                hint: "Cherchez un aspect caractéristique en 'dents de scie'",
+                criteria: ["Ondes F en dents de scie à ~300/min", "Bien visibles en DII, DIII, aVF", "Conduction AV souvent 2:1 (FC ~150/min)", "Rythme régulier"],
+                path: "M0,100 L10,90 L20,110 L30,90 L40,110 L45,90 L48,130 L52,70 L55,100 L65,90 L75,110 L85,90 L95,110"
+            },
+            {
+                name: "BAV du 1er degré",
+                hint: "Mesurez l'intervalle PR",
+                criteria: ["PR allongé > 200 ms (> 5 petits carreaux)", "PR constant", "Toutes les ondes P sont conduites", "Rythme sinusal par ailleurs"],
+                path: "M0,100 L15,100 L20,95 L25,100 L60,100 L65,90 L68,130 L72,70 L75,100 L90,100 L95,95 L100,100"
+            },
+            {
+                name: "BAV du 3ème degré (complet)",
+                hint: "Comparez le rythme des P et des QRS",
+                criteria: ["Dissociation auriculo-ventriculaire complète", "Ondes P régulières à leur propre rythme", "QRS réguliers mais à rythme différent", "Pas de relation entre P et QRS"],
+                path: "M0,100 L10,95 L15,100 L40,100 L45,85 L48,130 L52,70 L55,100 L65,95 L70,100 L85,100 L90,85 L93,125 L97,75 L100,100"
+            },
+            {
+                name: "STEMI antérieur",
+                hint: "Observez le segment ST",
+                criteria: ["Sus-décalage ST en V1-V4", "Aspect convexe vers le haut", "Image en miroir possible (sous-décalage inférieur)", "Territoire de l'IVA"],
+                path: "M0,100 L20,100 L25,95 L30,100 L50,100 L55,85 L58,130 L62,70 L65,85 L85,85 L90,80 L95,85"
+            },
+            {
+                name: "Bloc de branche gauche",
+                hint: "Regardez la durée et la morphologie du QRS",
+                criteria: ["QRS > 120 ms (élargi)", "Aspect RsR' en V5-V6", "Absence d'onde Q en V5-V6", "Troubles de repolarisation secondaires"],
+                path: "M0,100 L20,100 L25,95 L30,100 L48,100 L52,95 L55,80 L60,130 L68,75 L75,105 L80,100 L95,100"
+            },
+            {
+                name: "Tachycardie ventriculaire",
+                hint: "Évaluez la fréquence et la largeur des QRS",
+                criteria: ["QRS larges > 120 ms", "Fréquence rapide > 100/min", "Régularité du rythme", "Dissociation AV possible"],
+                path: "M0,100 L5,85 L10,130 L18,65 L25,110 L30,85 L35,130 L43,65 L50,110 L55,85 L60,130 L68,65 L75,110"
+            }
+        ];
+
+        // =====================================================
+        // DATA - STUDY PLAN
+        // =====================================================
+        const studyPlanData = [
+            {
+                id: 1, title: "Phase 1 - Fondations", duration: "1 semaine",
+                topics: [
+                    {title: "Anatomie cardiaque", items: ["Cavités et valves", "Circulation coronaire", "Système de conduction"]},
+                    {title: "Physiologie", items: ["Cycle cardiaque", "Précharge/postcharge/contractilité", "Loi de Starling"]},
+                    {title: "Sémiologie - Interrogatoire", items: ["Douleur thoracique", "Dyspnée", "Palpitations", "Syncope"]},
+                    {title: "Sémiologie - Examen", items: ["Auscultation 4 foyers", "Souffles", "Signes IC droite/gauche"]}
+                ]
+            },
+            {
+                id: 2, title: "Phase 2 - Examens complémentaires", duration: "1 semaine",
+                topics: [
+                    {title: "ECG - Lecture systématique", items: ["FC, rythme, axe", "P, PR, QRS", "ST, T"]},
+                    {title: "ECG - Pathologies", items: ["HVG/HVD", "BB", "BAV", "Ischémie", "Troubles rythme"]},
+                    {title: "Échocardiographie", items: ["Coupes", "FEVG", "Valves", "Pressions pulmonaires"]},
+                    {title: "Autres examens", items: ["Rx thorax", "Bio", "Coro", "Épreuve d'effort"]}
+                ]
+            },
+            {
+                id: 3, title: "Phase 3 - Grandes pathologies", duration: "3-4 semaines",
+                topics: [
+                    {title: "Maladie coronaire", items: ["Angor stable", "SCA ST+/ST-", "BASIC", "Complications IDM"]},
+                    {title: "Insuffisance cardiaque", items: ["ICFEr/p", "NYHA", "4 piliers", "OAP"]},
+                    {title: "Valvulopathies", items: ["RA/RM/IA/IM", "Critères sévérité", "Endocardite"]},
+                    {title: "Troubles du rythme", items: ["FA/Flutter", "TSV", "TV/FV", "BAV"]}
+                ]
+            },
+            {
+                id: 4, title: "Phase 4 - Pathologies complémentaires", duration: "1-2 semaines",
+                topics: [
+                    {title: "HTA", items: ["Définition", "Bilan", "HTA secondaires", "Traitement"]},
+                    {title: "Péricardites", items: ["Aiguë", "Tamponnade", "Constrictive"]},
+                    {title: "Cardiomyopathies", items: ["CMD", "CMH", "CMR", "Myocardite"]},
+                    {title: "Aorte et EP", items: ["Dissection", "Anévrismes", "EP"]}
+                ]
+            },
+            {
+                id: 5, title: "Phase 5 - Urgences", duration: "1 semaine",
+                topics: [
+                    {title: "Douleur thoracique", items: ["5 urgences", "Algorithme"]},
+                    {title: "Arrêt cardiaque", items: ["Chaîne survie", "RCP", "Choquable/non"]},
+                    {title: "Choc cardiogénique", items: ["Définition", "Étiologies", "PEC"]},
+                    {title: "Synthèse", items: ["Cas cliniques", "Révisions"]}
+                ]
+            }
+        ];
+
+        // =====================================================
+        // STATE
+        // =====================================================
+        let currentFlashcardCategory = null;
+        let currentFlashcards = [];
+        let currentCardIndex = 0;
+        let flashcardSessionStats = { easy: 0, medium: 0, hard: 0 };
+
+        let currentQCMCategory = null;
+        let currentQCMQuestions = [];
+        let currentQCMIndex = 0;
+        let qcmScore = 0;
+        let qcmQuestionCount = 10;
+        let qcmStartTime = null;
+        let qcmTimerInterval = null;
+        let selectedQCMOption = null;
+
+        let currentECGIndex = 0;
+
+        let progress = JSON.parse(localStorage.getItem('cardioProgress')) || {
+            flashcardsStudied: 0,
+            qcmCompleted: 0,
+            qcmScores: [],
+            topicRevisions: {}, // { "1-Anatomie": { firstStudied: date, revisions: [date1, date2...], nextRevision: date, intervalIndex: 0 } }
+            lastStudyDate: null
+        };
+
+        // =====================================================
+        // THEME MANAGEMENT
+        // =====================================================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('cardioTheme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            localStorage.setItem('cardioTheme', newTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (theme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Clair';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Sombre';
+            }
+        }
+
+        // =====================================================
+        // INITIALIZATION
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            initCategories();
+            initStudyPlan();
+            updateDashboard();
+            checkRevisions();
+            loadRandomECG();
+        });
+
+        function initCategories() {
+            const flashcardEl = document.getElementById('flashcard-categories');
+            flashcardEl.innerHTML = '';
+            for (const [key, cat] of Object.entries(flashcardsData)) {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.onclick = () => selectFlashcardCategory(key);
+                btn.innerHTML = `<h4>${cat.name}</h4><p>Phase ${cat.phase} • ${cat.cards.length} cartes</p>`;
+                flashcardEl.appendChild(btn);
+            }
+
+            const qcmEl = document.getElementById('qcm-categories');
+            qcmEl.innerHTML = '';
+            for (const [key, cat] of Object.entries(qcmData)) {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.onclick = () => selectQCMCategory(key, btn);
+                btn.innerHTML = `<h4>${cat.name}</h4><p>Phase ${cat.phase} • ${cat.questions.length} questions</p>`;
+                qcmEl.appendChild(btn);
+            }
+        }
+
+        function initStudyPlan() {
+            const planEl = document.getElementById('study-plan');
+            planEl.innerHTML = '';
+
+            studyPlanData.forEach(phase => {
+                const phaseEl = document.createElement('div');
+                phaseEl.className = 'phase';
+                phaseEl.innerHTML = `
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <h3>📖 ${phase.title} <span style="font-weight:normal;font-size:0.9rem;">(${phase.duration})</span></h3>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="phase-content">
+                        ${phase.topics.map(topic => {
+                            const key = `${phase.id}-${topic.title}`;
+                            const rev = progress.topicRevisions[key];
+                            const revisionBadges = getRevisionBadges(rev);
+                            const isStudied = rev && rev.firstStudied;
+
+                            return `
+                                <div class="topic">
+                                    <h4>
+                                        <input type="checkbox" class="topic-checkbox" ${isStudied ? 'checked' : ''}
+                                            onchange="toggleTopic(${phase.id}, '${topic.title}', this.checked)">
+                                        ${topic.title}
+                                    </h4>
+                                    <ul>${topic.items.map(item => `<li>${item}</li>`).join('')}</ul>
+                                    <div class="topic-revision">
+                                        ${revisionBadges}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                planEl.appendChild(phaseEl);
+            });
+        }
+
+        function getRevisionBadges(rev) {
+            if (!rev || !rev.firstStudied) {
+                return '<span class="revision-badge">Non étudié</span>';
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let badges = `<span class="revision-badge done">Étudié le ${formatDate(new Date(rev.firstStudied))}</span>`;
+
+            INTERVAL_LABELS.forEach((label, idx) => {
+                const revDate = rev.revisions && rev.revisions[idx] ? new Date(rev.revisions[idx]) : null;
+
+                if (revDate) {
+                    badges += `<span class="revision-badge done">${label} ✓</span>`;
+                } else if (rev.intervalIndex === idx) {
+                    const nextDate = new Date(rev.nextRevision);
+                    nextDate.setHours(0, 0, 0, 0);
+
+                    if (nextDate < today) {
+                        badges += `<span class="revision-badge overdue">${label} EN RETARD!</span>`;
+                    } else if (nextDate.getTime() === today.getTime()) {
+                        badges += `<span class="revision-badge due">${label} AUJOURD'HUI</span>`;
+                    } else {
+                        const daysUntil = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+                        badges += `<span class="revision-badge upcoming">${label} dans ${daysUntil}j</span>`;
+                    }
+                } else if (idx > rev.intervalIndex) {
+                    badges += `<span class="revision-badge">${label}</span>`;
+                }
+            });
+
+            if (rev.intervalIndex >= INTERVAL_LABELS.length) {
+                badges += `<span class="revision-badge done">✓ Maîtrisé!</span>`;
+            }
+
+            return badges;
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        }
+
+        // =====================================================
+        // SPACED REPETITION LOGIC
+        // =====================================================
+        function toggleTopic(phaseId, topicTitle, checked) {
+            const key = `${phaseId}-${topicTitle}`;
+            const today = new Date().toISOString();
+
+            if (checked) {
+                if (!progress.topicRevisions[key]) {
+                    // First time studying this topic
+                    const nextRevisionDate = new Date();
+                    nextRevisionDate.setDate(nextRevisionDate.getDate() + REVISION_INTERVALS[0]);
+
+                    progress.topicRevisions[key] = {
+                        firstStudied: today,
+                        revisions: [],
+                        nextRevision: nextRevisionDate.toISOString(),
+                        intervalIndex: 0
+                    };
+                }
+            }
+
+            saveProgress();
+            initStudyPlan();
+            updateDashboard();
+            checkRevisions();
+        }
+
+        function markRevisionDone(key) {
+            const rev = progress.topicRevisions[key];
+            if (!rev) return;
+
+            const today = new Date().toISOString();
+
+            // Mark current interval as done
+            if (!rev.revisions) rev.revisions = [];
+            rev.revisions[rev.intervalIndex] = today;
+
+            // Move to next interval
+            rev.intervalIndex++;
+
+            if (rev.intervalIndex < REVISION_INTERVALS.length) {
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + REVISION_INTERVALS[rev.intervalIndex]);
+                rev.nextRevision = nextDate.toISOString();
+            } else {
+                rev.nextRevision = null; // Completed all revisions
+            }
+
+            saveProgress();
+            initStudyPlan();
+            updateDashboard();
+            checkRevisions();
+        }
+
+        function checkRevisions() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let dueCount = 0;
+            let overdueCount = 0;
+            const revisionItems = [];
+
+            for (const [key, rev] of Object.entries(progress.topicRevisions)) {
+                if (!rev.nextRevision || rev.intervalIndex >= REVISION_INTERVALS.length) continue;
+
+                const nextDate = new Date(rev.nextRevision);
+                nextDate.setHours(0, 0, 0, 0);
+
+                const [phaseId, topicTitle] = key.split('-');
+                const intervalLabel = INTERVAL_LABELS[rev.intervalIndex];
+
+                if (nextDate <= today) {
+                    const isOverdue = nextDate < today;
+                    if (isOverdue) overdueCount++;
+                    dueCount++;
+
+                    revisionItems.push({
+                        key,
+                        topic: topicTitle,
+                        phase: phaseId,
+                        interval: intervalLabel,
+                        date: nextDate,
+                        isOverdue,
+                        isToday: nextDate.getTime() === today.getTime()
+                    });
+                } else {
+                    // Upcoming revisions
+                    const daysUntil = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+                    if (daysUntil <= 7) {
+                        revisionItems.push({
+                            key,
+                            topic: topicTitle,
+                            phase: phaseId,
+                            interval: intervalLabel,
+                            date: nextDate,
+                            daysUntil,
+                            isUpcoming: true
+                        });
+                    }
+                }
+            }
+
+            // Sort: overdue first, then today, then upcoming
+            revisionItems.sort((a, b) => {
+                if (a.isOverdue && !b.isOverdue) return -1;
+                if (!a.isOverdue && b.isOverdue) return 1;
+                if (a.isToday && !b.isToday) return -1;
+                if (!a.isToday && b.isToday) return 1;
+                return a.date - b.date;
+            });
+
+            // Update badge
+            const badge = document.getElementById('revision-badge');
+            if (dueCount > 0) {
+                badge.textContent = dueCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Update revision card on dashboard
+            document.getElementById('revisions-due').textContent = dueCount;
+            const revCard = document.getElementById('revision-card');
+            if (overdueCount > 0) {
+                revCard.classList.add('urgent');
+            } else {
+                revCard.classList.remove('urgent');
+            }
+
+            // Update revision list
+            const listEl = document.getElementById('revision-list');
+            if (revisionItems.length === 0) {
+                listEl.innerHTML = '<p style="color:#666;text-align:center;padding:20px;">Aucune révision prévue. Commencez à étudier dans le plan d\'étude!</p>';
+            } else {
+                listEl.innerHTML = revisionItems.slice(0, 10).map(item => {
+                    let className = 'revision-item';
+                    let dateText = '';
+                    let buttons = '';
+
+                    if (item.isOverdue) {
+                        className += ' urgent';
+                        dateText = 'EN RETARD';
+                        buttons = `<button class="btn-revise" onclick="markRevisionDone('${item.key}')">✓ Révisé</button>`;
+                    } else if (item.isToday) {
+                        className += ' today';
+                        dateText = "Aujourd'hui";
+                        buttons = `<button class="btn-revise" onclick="markRevisionDone('${item.key}')">✓ Révisé</button>`;
+                    } else {
+                        dateText = `Dans ${item.daysUntil}j`;
+                    }
+
+                    return `
+                        <div class="${className}">
+                            <span class="date">${dateText}</span>
+                            <span class="topic"><strong>Phase ${item.phase}</strong> - ${item.topic}</span>
+                            <span class="interval">${item.interval}</span>
+                            ${buttons}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Show notification if there are due revisions
+            if (dueCount > 0) {
+                const notif = document.getElementById('notification-banner');
+                document.getElementById('notification-title').textContent = overdueCount > 0 ? '⚠️ Révisions en retard!' : '📚 Révisions du jour';
+                document.getElementById('notification-text').textContent = `Vous avez ${dueCount} révision(s) à faire${overdueCount > 0 ? ` dont ${overdueCount} en retard` : ''}.`;
+                notif.classList.add('show');
+            }
+        }
+
+        function hideNotification() {
+            document.getElementById('notification-banner').classList.remove('show');
+        }
+
+        // =====================================================
+        // NAVIGATION
+        // =====================================================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+
+            if (sectionId === 'flashcards') {
+                document.getElementById('flashcard-area').style.display = 'none';
+                document.getElementById('flashcard-categories').style.display = 'grid';
+            }
+        }
+
+        function updateNavButtons(activeId) {
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById('nav-' + activeId).classList.add('active');
+        }
+
+        function togglePhase(header) {
+            header.parentElement.classList.toggle('open');
+        }
+
+        // =====================================================
+        // FLASHCARDS
+        // =====================================================
+        function selectFlashcardCategory(key) {
+            currentFlashcardCategory = key;
+            currentFlashcards = shuffleArray([...flashcardsData[key].cards]);
+            currentCardIndex = 0;
+            flashcardSessionStats = { easy: 0, medium: 0, hard: 0 };
+
+            document.getElementById('flashcard-categories').style.display = 'none';
+            document.getElementById('flashcard-area').style.display = 'block';
+            showCurrentCard();
+        }
+
+        function showCurrentCard() {
+            if (currentCardIndex >= currentFlashcards.length) {
+                endFlashcardSession();
+                return;
+            }
+            const card = currentFlashcards[currentCardIndex];
+            document.getElementById('card-category').textContent = flashcardsData[currentFlashcardCategory].name;
+            document.getElementById('card-question').textContent = card.q;
+            document.getElementById('card-answer').textContent = card.a;
+            document.getElementById('current-card').textContent = currentCardIndex + 1;
+            document.getElementById('total-cards-session').textContent = currentFlashcards.length;
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+
+        function rateCard(rating) {
+            flashcardSessionStats[rating]++;
+            currentCardIndex++;
+            progress.flashcardsStudied++;
+            saveProgress();
+            showCurrentCard();
+        }
+
+        function endFlashcardSession() {
+            const total = flashcardSessionStats.easy + flashcardSessionStats.medium + flashcardSessionStats.hard;
+            alert(`Session terminée!\n\n✅ Facile: ${flashcardSessionStats.easy}\n🤔 Moyen: ${flashcardSessionStats.medium}\n❌ Difficile: ${flashcardSessionStats.hard}\n\nTotal: ${total} cartes`);
+            document.getElementById('flashcard-area').style.display = 'none';
+            document.getElementById('flashcard-categories').style.display = 'grid';
+            updateDashboard();
+        }
+
+        // =====================================================
+        // QCM
+        // =====================================================
+        function selectQCMCategory(key, btn) {
+            document.querySelectorAll('#qcm-categories .category-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            currentQCMCategory = key;
+            document.getElementById('start-qcm-btn').disabled = false;
+        }
+
+        function selectQCMMode(count, card) {
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            qcmQuestionCount = count;
+        }
+
+        function startQCM() {
+            if (!currentQCMCategory) return;
+            currentQCMQuestions = shuffleArray([...qcmData[currentQCMCategory].questions]).slice(0, Math.min(qcmQuestionCount, qcmData[currentQCMCategory].questions.length));
+            currentQCMIndex = 0;
+            qcmScore = 0;
+            selectedQCMOption = null;
+            qcmStartTime = Date.now();
+
+            document.getElementById('qcm-setup').style.display = 'none';
+            document.getElementById('qcm-quiz').style.display = 'block';
+            document.getElementById('qcm-results').style.display = 'none';
+            startQCMTimer();
+            showCurrentQCMQuestion();
+        }
+
+        function startQCMTimer() {
+            const timerEl = document.getElementById('qcm-timer');
+            qcmTimerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - qcmStartTime) / 1000);
+                timerEl.textContent = `⏱️ ${String(Math.floor(elapsed/60)).padStart(2,'0')}:${String(elapsed%60).padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        function showCurrentQCMQuestion() {
+            const q = currentQCMQuestions[currentQCMIndex];
+            document.getElementById('qcm-progress').textContent = `Question ${currentQCMIndex + 1}/${currentQCMQuestions.length}`;
+            document.getElementById('qcm-question-text').textContent = q.q;
+
+            const optionsEl = document.getElementById('qcm-options');
+            optionsEl.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'qcm-option';
+                btn.textContent = opt;
+                btn.onclick = () => selectQCMOption(idx, btn);
+                optionsEl.appendChild(btn);
+            });
+
+            document.getElementById('qcm-explanation').classList.remove('show');
+            document.getElementById('qcm-validate').style.display = 'inline-block';
+            document.getElementById('qcm-validate').disabled = true;
+            document.getElementById('qcm-next').style.display = 'none';
+            selectedQCMOption = null;
+        }
+
+        function selectQCMOption(idx, btn) {
+            document.querySelectorAll('.qcm-option').forEach(o => o.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedQCMOption = idx;
+            document.getElementById('qcm-validate').disabled = false;
+        }
+
+        function validateQCMAnswer() {
+            const q = currentQCMQuestions[currentQCMIndex];
+            document.querySelectorAll('.qcm-option').forEach((opt, idx) => {
+                opt.classList.add('disabled');
+                if (idx === q.correct) opt.classList.add('correct');
+                else if (idx === selectedQCMOption) opt.classList.add('incorrect');
+            });
+            if (selectedQCMOption === q.correct) qcmScore++;
+            document.getElementById('qcm-explanation-text').textContent = q.explanation;
+            document.getElementById('qcm-explanation').classList.add('show');
+            document.getElementById('qcm-validate').style.display = 'none';
+            document.getElementById('qcm-next').style.display = 'inline-block';
+            document.getElementById('qcm-next').textContent = currentQCMIndex < currentQCMQuestions.length - 1 ? 'Question suivante →' : 'Voir les résultats';
+        }
+
+        function nextQCMQuestion() {
+            currentQCMIndex++;
+            if (currentQCMIndex >= currentQCMQuestions.length) endQCM();
+            else showCurrentQCMQuestion();
+        }
+
+        function endQCM() {
+            clearInterval(qcmTimerInterval);
+            const pct = Math.round((qcmScore / currentQCMQuestions.length) * 100);
+            const elapsed = Math.floor((Date.now() - qcmStartTime) / 1000);
+
+            document.getElementById('qcm-quiz').style.display = 'none';
+            document.getElementById('qcm-results').style.display = 'block';
+            document.getElementById('qcm-final-score').textContent = `${pct}%`;
+            document.getElementById('qcm-score-details').textContent = `${qcmScore} bonnes réponses sur ${currentQCMQuestions.length}`;
+            document.getElementById('qcm-time-taken').textContent = `Temps: ${Math.floor(elapsed/60)}min ${elapsed%60}s`;
+
+            progress.qcmCompleted++;
+            progress.qcmScores.push(pct);
+            saveProgress();
+            updateDashboard();
+        }
+
+        function restartQCM() { startQCM(); }
+        function showQCMSetup() {
+            document.getElementById('qcm-setup').style.display = 'block';
+            document.getElementById('qcm-quiz').style.display = 'none';
+            document.getElementById('qcm-results').style.display = 'none';
+        }
+
+        // =====================================================
+        // ECG
+        // =====================================================
+        function loadRandomECG() {
+            currentECGIndex = Math.floor(Math.random() * ecgPatterns.length);
+            const ecg = ecgPatterns[currentECGIndex];
+
+            document.getElementById('ecg-hint').textContent = `💡 Indice: ${ecg.hint}`;
+            document.getElementById('ecg-answer').classList.remove('show');
+
+            drawECG(ecg.path);
+        }
+
+        function drawECG(pathData) {
+            const svg = document.getElementById('ecg-svg');
+
+            // Create grid and trace
+            let gridHtml = '';
+            // Minor grid
+            for (let x = 0; x <= 800; x += 20) {
+                gridHtml += `<line x1="${x}" y1="0" x2="${x}" y2="200" class="ecg-grid"/>`;
+            }
+            for (let y = 0; y <= 200; y += 20) {
+                gridHtml += `<line x1="0" y1="${y}" x2="800" y2="${y}" class="ecg-grid"/>`;
+            }
+            // Major grid
+            for (let x = 0; x <= 800; x += 100) {
+                gridHtml += `<line x1="${x}" y1="0" x2="${x}" y2="200" class="ecg-grid-major"/>`;
+            }
+            for (let y = 0; y <= 200; y += 100) {
+                gridHtml += `<line x1="0" y1="${y}" x2="800" y2="${y}" class="ecg-grid-major"/>`;
+            }
+
+            // Generate full trace by repeating pattern
+            let fullPath = '';
+            const basePattern = pathData;
+            for (let i = 0; i < 8; i++) {
+                const offsetX = i * 100;
+                const adjustedPath = basePattern.replace(/(\d+),(\d+)/g, (match, x, y) => {
+                    return `${parseInt(x) + offsetX},${y}`;
+                }).replace(/M\d+/, `M${offsetX}`);
+
+                if (i === 0) fullPath = adjustedPath;
+                else fullPath += ' ' + adjustedPath.replace(/^M/, 'L');
+            }
+
+            svg.innerHTML = gridHtml + `<path class="ecg-trace" d="${fullPath}"/>`;
+        }
+
+        function showECGAnswer() {
+            const ecg = ecgPatterns[currentECGIndex];
+            document.getElementById('ecg-diagnosis').textContent = `✓ ${ecg.name}`;
+            document.getElementById('ecg-criteria').innerHTML = ecg.criteria.map(c => `<li>${c}</li>`).join('');
+            document.getElementById('ecg-answer').classList.add('show');
+        }
+
+        // =====================================================
+        // PROGRESS
+        // =====================================================
+        function saveProgress() {
+            progress.lastStudyDate = new Date().toDateString();
+            localStorage.setItem('cardioProgress', JSON.stringify(progress));
+        }
+
+        function updateDashboard() {
+            document.getElementById('total-cards').textContent = progress.flashcardsStudied;
+            document.getElementById('total-qcm').textContent = progress.qcmCompleted;
+            const avg = progress.qcmScores.length > 0 ? Math.round(progress.qcmScores.reduce((a,b) => a+b, 0) / progress.qcmScores.length) : 0;
+            document.getElementById('avg-score').textContent = avg + '%';
+
+            for (let i = 1; i <= 5; i++) {
+                const topics = studyPlanData.find(p => p.id === i).topics;
+                const studied = topics.filter(t => progress.topicRevisions[`${i}-${t.title}`]?.firstStudied).length;
+                const pct = Math.round((studied / topics.length) * 100);
+                document.getElementById(`phase${i}-pct`).textContent = pct + '%';
+                document.getElementById(`phase${i}-bar`).style.width = pct + '%';
+            }
+        }
+
+        function resetProgress() {
+            if (confirm('Réinitialiser toute la progression ?')) {
+                localStorage.removeItem('cardioProgress');
+                progress = { flashcardsStudied: 0, qcmCompleted: 0, qcmScores: [], topicRevisions: {}, lastStudyDate: null };
+                updateDashboard();
+                initStudyPlan();
+                checkRevisions();
+                hideNotification();
+            }
+        }
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+    </script>
+</body>
+</html>
